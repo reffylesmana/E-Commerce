@@ -1,0 +1,104 @@
+body {
+    background-color: #f8f9fa;
+  }
+
+  h2 {
+    font-weight: bold;
+  }
+
+  /* Style the brand */
+  /* Navbar Styles */
+  .navbar {
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+
+  .navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+    color: #000;
+  }
+
+  .navbar-brand:hover {
+    text-decoration: none;
+    color: #ff5e57; /* Highlight on hover */
+  }
+
+  /* Cart Icon */
+  .nav-link .bi-cart {
+    font-size: 1.2rem;
+    margin-right: 5px;
+    color: #000;
+  }
+
+  /* Profile Photo */
+  .nav-link img {
+    border: 2px solid #ddd;
+    transition: border-color 0.3s;
+  }
+
+  .nav-link img:hover {
+    border-color: #ff5e57;
+  }
+
+  /* Dropdown Menu */
+  .dropdown-menu {
+    min-width: 200px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .dropdown-menu a {
+    color: #555;
+    transition: color 0.3s;
+  }
+
+  .dropdown-menu a:hover {
+    color: #000;
+  }
+
+  /* Divider */
+  .dropdown-divider {
+    margin: 0.5rem 0;
+  }
+
+  .dropdown-toggle::after {
+    display: none !important;
+    }
+
+  .img-thumbnail {
+    cursor: pointer;
+    border: 2px solid transparent;
+  }
+
+  .img-thumbnail:hover {
+    border-color: #000;
+  }
+
+  .btn-group .btn-secondary {
+    background-color: #000;
+    border-color: #000;
+  }
+
+
+
+  /* products */
+  .product-item {
+    overflow: hidden; /* Menjaga elemen tetap dalam card */
+    transition: .3s;
+    scale: 1;
+  }
+  .product-item:hover{
+    scale: 1.05;
+  }
+
+  .action-buttons {
+      top: 10px; /* Jarak dari atas */
+      right: 10px; /* Jarak dari kanan */
+      z-index: 10; /* Pastikan di depan gambar */
+      display: flex;
+      flex-direction: column; /* Menyusun tombol secara vertikal */
+      gap: 5px; /* Jarak antar tombol */
+  }
+
+
