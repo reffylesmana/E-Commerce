@@ -23,23 +23,24 @@ class AdminPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->brandLogo(asset('images/dc-logo.svg'))
+            ->brandLogo(asset('img/logo.png'))
+            ->brandLogoHeight('64px') 
             ->default()
             ->id('admin')
             ->path('admin')
             ->login()
             ->colors([
-                'primary' => Color::Amber,
+                'primary' =>'#3b82f6', // Warna utama panel
             ])
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
+            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources') // Mengubah lokasi Resources Admin
+            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages') // Mengubah lokasi Pages Admin
             ->pages([
-                Pages\Dashboard::class,
+                Pages\Dashboard::class, // Halaman Dashboard untuk Admin
             ])
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
+            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets') // Mengubah lokasi Widgets Admin
             ->widgets([
-                Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
+                Widgets\AccountWidget::class, // Widget akun
+                Widgets\FilamentInfoWidget::class, // Widget informasi Filament
             ])
             ->middleware([
                 EncryptCookies::class,

@@ -57,7 +57,12 @@ return [
 
     'assets_path' => null,
     'path' => 'admin',
+    'path' => 'seller',
 
+    'providers' => [
+        \App\Providers\Filament\AdminPanelProvider::class,
+        \App\Providers\Filament\SellerPanelProvider::class,
+    ],
 
     /*
     |--------------------------------------------------------------------------

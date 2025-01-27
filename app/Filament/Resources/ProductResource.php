@@ -38,7 +38,7 @@ class ProductResource extends Resource
     protected static ?string $navigationLabel = 'Produk';
     protected static ?string $label = 'Produk';
     protected static ?string $navigationGroup = 'Data Master';
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {
@@ -185,7 +185,8 @@ class ProductResource extends Resource
                 TextColumn::make('created_at')
                     ->label('Tanggal Dibuat')
                     ->dateTime()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make(),

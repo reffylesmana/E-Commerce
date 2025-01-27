@@ -26,7 +26,7 @@ class CategoryResource extends Resource
     protected static ?string $navigationLabel = 'Kategori';
     protected static ?string $label = 'Kategori';
     protected static ?string $navigationGroup = 'Data Master';
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {
@@ -44,7 +44,6 @@ class CategoryResource extends Resource
                     ->visibility('public')
                     ->imageEditor()
                     ->imageCropAspectRatio('1:1')
-
             ]);
     }
 

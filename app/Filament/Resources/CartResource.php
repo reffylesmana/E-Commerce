@@ -22,8 +22,8 @@ class CartResource extends Resource
     protected static ?string $model = Cart::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
-    protected static ?string $navigationLabel = 'Keranjang';
-    protected static ?int $navigationSort = 5;
+    protected static ?string $label = 'Keranjang';
+    protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
     {
