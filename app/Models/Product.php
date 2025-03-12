@@ -12,6 +12,21 @@ class Product extends Model
 {
     use SoftDeletes;
 
+    protected $fillable = [
+        'category_id', // Tambahkan ini
+        'user_id',
+        'name',
+        'slug',
+        'price',
+        'description',
+        'stock',
+        'image',
+        'size',
+        'weight',
+        'is_reference',
+        'photo',
+    ];
+
     public function getRouteKeyName(): string
     {
         return 'slug';
@@ -37,4 +52,8 @@ class Product extends Model
         return $this->hasMany(ProductPhoto::class);
     }
 
+    public function store()
+    {
+        return $this->belongsTo(Store::class);
+    }
 }

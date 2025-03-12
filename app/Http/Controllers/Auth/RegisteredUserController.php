@@ -29,7 +29,7 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255', 'unique:users,name'],
-            'username' => ['required', 'string', 'max:255', 'unique:users,username'],  // Validasi untuk username
+            'username' => ['required', 'string', 'max:255', 'unique:users,username', 'regex:/^[a-zA-Z0-9_]+$/'], 
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'confirmed', 'min:8', 'max:20'],
             'role' => ['required', 'in:seller,buyer'],

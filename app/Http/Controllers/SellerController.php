@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
@@ -11,15 +12,42 @@ class SellerController extends Controller
      */
     public function index()
     {
-        if (!view()->exists('seller.dashboard')) {
-            return response()->json(['error' => 'View not found!'], 404);
-        }
-    
-        if (Auth::user()->role !== 'seller') {
+        // Cek apakah pengguna terautentikasi dan memiliki peran 'seller'
+        if (!Auth::check() || Auth::user()->role !== 'seller') {
             abort(403, 'Unauthorized action.');
         }
 
-        return view('seller.dashboard');
+        // Ambil store pengguna
+        $store = Auth::user()->store;
+
+        // Pastikan store ada, jika tidak, set $store ke null
+        if (!$store) {
+            $store = null; // Atau Anda bisa mengatur nilai default lainnya
+        }
+
+        // Tampilkan view dengan data store
+        return view('seller.dashboard', compact('store'));
     }
-    
+
+    /**
+     * Tampilkan halaman store untuk seller.
+     */
+    public function store()
+    {
+        // Cek apakah pengguna terautentikasi dan memiliki peran 'seller'
+        if (!Auth::check() || Auth::user()->role !== 'seller') {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // Ambil store pengguna
+        $store = Auth::user()->store;
+
+        // Pastikan store ada, jika tidak, set $store ke null
+        if (!$store) {
+            $store = null; // Atau Anda bisa mengatur nilai default lainnya
+        }
+
+        // Tampilkan view dengan data store
+        return view('seller.store', compact('store'));
+    }
 }

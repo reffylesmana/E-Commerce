@@ -1,242 +1,182 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
 
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title')</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ config('app.name', 'TailAdmin Dashboard') }}</title>
+    <meta name="description" content="TailAdmin Dashboard Template">
 
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Keania+One&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&family=Rajdhani:wght@300;400;500;600;700&family=Prosto+One&display=swap"
-        rel="stylesheet">
+    <!-- Iconify CDN -->
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
 
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- SweetAlert CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
-    <!-- Ionicons -->
-    <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
-
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-
-    <!-- iCheck -->
-    <link rel="stylesheet" href="{{ asset('AdminLTE-3.2.0/plugins/icheck-bootstrap/icheck-bootstrap.min.css') }}">
-
-    <!-- JQVMap -->
-    <link rel="stylesheet" href="{{ asset('AdminLTE-3.2.0/plugins/jqvmap/jqvmap.min.css') }}">
-
-    <!-- Theme style -->
-    <link rel="stylesheet" href="{{ asset('AdminLTE-3.2.0/dist/css/adminlte.min.css') }}">
-
-    <!-- overlayScrollbars -->
-    <link rel="stylesheet" href="{{ asset('AdminLTE-3.2.0/plugins/overlayScrollbars/css/OverlayScrollbars.min.css') }}">
-
-    <!-- Daterange picker -->
-    <link rel="stylesheet" href="{{ asset('AdminLTE-3.2.0/plugins/daterangepicker/daterangepicker.css') }}">
-
-    <!-- summernote -->
-    <link rel="stylesheet" href="{{ asset('AdminLTE-3.2.0/plugins/summernote/summernote-bs4.min.css') }}">
-
-    {{-- DataTables --}}
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/dataTables.bootstrap4.min.css">
-
-    {{-- Sweetalert --}}
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.0/dist/sweetalert2.min.css">
+    <!-- Styles -->
+    @vite('resources/css/app.css')
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 
     <!-- Scripts -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-
-    <!-- My Style -->
+    @vite('resources/js/app.js')
+    @php
+    $user = auth()->user();
+    $store = $user->store ?? null;
+    $storeApproved = $store && $store->is_approved;
+@endphp
     <style>
+        /* Custom CSS */
+
         * {
-            font-family: Poppins;
+            transition: all 0.15 s ease-in-out;
         }
 
-        .container .row {
-            margin-left: 1rem;
-            margin-right: 1rem;
+        :root {
+            --sidebar-width-expanded: 16rem;
+            --sidebar-width-collapsed: 5rem;
+            --transition-duration: 0.3s;
         }
 
-        /* Side-Bar */
-        .brand-text {
-            font-family: Keania One;
-        }
-
-        .side-bar {
-            font-weight: 400;
-            color: black;
-            border-radius: 30px;
-            transition: all .3s ease-in;
-        }
-
-        .side-bar:hover {
-            background-color: #D16A03;
-            border-radius: 30px;
-            box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.419);
-        }
-
-        .side-bar:hover i,
-        .side-bar:hover p {
-            color: white;
-        }
-
-        .side-bar.aktif {
-            background-color: #D16A03;
-            border-radius: 30px;
-            box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.419);
-        }
-
-        .side-bar.aktif .nav-link i,
-        .side-bar.aktif .nav-link p {
-            color: white;
-        }
-
-        /* Content */
-        .title-page {
-            font-family: Rajdhani;
-            font-size: 30px;
-            font-weight: 700;
-            margin-top: 5.5rem;
-        }
-
-        .card-stats {
-            border-radius: 10px;
-            box-shadow: 0px 5px 5px rgba(128, 128, 128, 0.459);
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-
-        .card-sertifikat {
-            background-color: #D9D9D9;
-            box-shadow: 5px 5px 5px rgba(128, 128, 128, 0.664);
-            border-radius: 10px;
-            padding: .8rem;
-        }
-
-        .card-sertifikat .card-body img {
-            margin-left: -3rem;
-            margin-top: -1rem;
-        }
-
-        .card-view {
-            background-color: #D9D9D9;
-            border-radius: 30px;
-            font-size: 1rem;
-            transition: all .3s ease;
-        }
-
-        .card-view:hover {
-            color: white;
-            background-color: #D16A03;
-            box-shadow: 0px 0px 20px black;
-        }
-
-        .main-footer {
+        .sidebar {
+            width: var(--sidebar-width-expanded);
+            transition: all var(--transition-duration) ease;
+            height: 100vh;
             position: fixed;
-            bottom: 0;
-            right: 0;
             left: 0;
-            margin-top: 1rem;
+            top: 0;
         }
 
-        /* Tambahkan di dalam <style> di bagian <head> atau file CSS terpisah */
-        .table td {
-            white-space: nowrap; /* Mencegah teks berpindah ke baris baru */
-            overflow: hidden; /* Menyembunyikan teks yang melampaui ukuran kolom */
-            text-overflow: ellipsis; /* Menampilkan ... ketika teks terlalu panjang */
+        .sidebar-collapsed {
+            width: var(--sidebar-width-collapsed);
         }
 
-        .table th {
-            white-space: nowrap; /* Sama untuk header agar konsisten */
+        .main-content {
+            margin-left: var(--sidebar-width-expanded);
+            transition: margin var(--transition-duration) ease;
         }
 
-
-        /* Sticky footer */
-        html,
-        body {
-            height: 100%;
-            margin: 0;
+        .sidebar-collapsed+.main-content {
+            margin-left: var(--sidebar-width-collapsed);
         }
 
-        .wrapper {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
+        .nav-text {
+            opacity: 1;
+            transition: opacity var(--transition-duration) ease;
         }
 
-        .content-wrapper {
-            flex-grow: 1;
-            padding-bottom: 8rem;
+        /* Di dalam tag style di main layout */
+        .sidebar-collapsed .nav-text {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar:not(.sidebar-collapsed) .nav-text {
+            opacity: 1;
+            width: auto;
+        }
+
+        .sidebar-collapsed img {
+            margin-left: 0.25rem;
+            transform: scale(0.9);
+        }
+
+        .dropdown-menu {
+            display: none;
+            right: 0;
+            min-width: 12rem;
+        }
+
+        .dark-mode {
+            background-color: #1a202c;
+            color: #fff;
+        }
+
+        .dark-mode .sidebar {
+            background-color: #2d3748;
         }
     </style>
 </head>
 
-<body class="hold-transition sidebar-mini layout-fixed">
-    <div class="wrapper">
-
-        <!-- Navbar -->
-        @include('layouts.seller.navigation')
-
-        <!-- Main Sidebar Container -->
+<body class="h-full">
+    <div class="flex">
+        <!-- Sidebar -->
         @include('layouts.seller.side-bar')
 
-        <!-- Content Wrapper. Contains page content -->
-        <div class="content-wrapper flex-grow-1">
-            @yield('content')
+        <!-- Main Content -->
+        <div class="main-content flex-1 min-h-screen">
+            <!-- Navigation -->
+            @include('layouts.seller.navigation')
+
+            <!-- Page Content -->
+            <main class="">
+                @yield('content')
+            </main>
         </div>
-
-        <!-- Footer -->
-        <footer class="main-footer">
-            <strong>Copyright &copy; 2024 <a href="">GuruMagang.id</a>.</strong>
-            All rights reserved.
-            <div class="float-right d-none d-sm-inline-block">
-                <b>TEFA IFSU</b>
-            </div>
-        </footer>
-
     </div>
-    <!-- ./wrapper -->
 
-    {{-- Sweet Alert --}}
+
+    <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap5.min.js"></script>
+    <!-- SweetAlert JS -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- jQuery -->
-    <script src="{{ asset('AdminLTE-3.2.0/plugins/jquery/jquery.min.js') }}"></script>
-    <!-- jQuery UI 1.11.4 -->
-    <script src="{{ asset('AdminLTE-3.2.0/plugins/jquery-ui/jquery-ui.min.js') }}"></script>
-    <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
+    <!-- TomSelect -->
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+
     <script>
-        $.widget.bridge('uibutton', $.ui.button)
+        // Di dalam template (bagian script)
+        @if (Session::has('swal'))
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: "{{ Session::get('swal.icon', 'success') }}",
+                    title: "{{ Session::get('swal.title') }}",
+                    text: "{{ Session::get('swal.text') }}",
+                    confirmButtonText: "{{ Session::get('swal.button', 'OK') }}",
+                    confirmButtonColor: "#6366f1",
+                    timer: {{ Session::get('swal.timer', 'null') }}, // dalam milidetik
+                    timerProgressBar: true,
+                });
+            });
+        @endif
+        // Toggle Sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const toggleIcon = document.getElementById('sidebar-toggle-icon');
+
+            sidebar.classList.toggle('sidebar-collapsed');
+
+            // Update icon berdasarkan state sidebar
+            if (sidebar.classList.contains('sidebar-collapsed')) {
+                toggleIcon.setAttribute('icon', 'heroicons:chevron-double-right');
+            } else {
+                toggleIcon.setAttribute('icon', 'heroicons:chevron-double-left');
+            }
+        }
+
+        // Dropdown Management
+        function toggleDropdown(menuId) {
+            const menu = document.getElementById(menuId);
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // Close dropdowns on outside click
+        document.addEventListener('click', function(event) {
+            const dropdowns = document.querySelectorAll('.dropdown-menu');
+            dropdowns.forEach(dropdown => {
+                if (!event.target.closest('.dropdown-parent') &&
+                    !event.target.closest('.dropdown-menu')) {
+                    dropdown.style.display = 'none';
+                }
+            });
+        });
+
+        // Dark Mode Toggle
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+        }
     </script>
-    <!-- Bootstrap 4 -->
-    <script src="{{ asset('AdminLTE-3.2.0/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-    <!-- ChartJS -->
-    <script src="{{ asset('AdminLTE-3.2.0/plugins/chart.js/Chart.min.js') }}"></script>
-    <!-- Sparkline -->
-    <script src="{{ asset('AdminLTE-3.2.0/plugins/sparklines/sparkline.js') }}"></script>
-    <!-- JQVMap -->
-    <script src="{{ asset('AdminLTE-3.2.0/plugins/jqvmap/jquery.vmap.min.js') }}"></script>
-    <script src="{{ asset('AdminLTE-3.2.0/plugins/jqvmap/maps/jquery.vmap.usa.js') }}"></script>
-    <!-- jQuery Knob Chart -->
-    <script src="{{ asset('AdminLTE-3.2.0/plugins/jquery-knob/jquery.knob.min.js') }}"></script>
-    <!-- daterangepicker -->
-    <script src="{{ asset('AdminLTE-3.2.0/plugins/moment/moment.min.js') }}"></script>
-    <script src="{{ asset('AdminLTE-3.2.0/plugins/daterangepicker/daterangepicker.js') }}"></script>
-    <!-- Tempusdominus Bootstrap 5 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-    <!-- Summernote -->
-    <script src="{{ asset('AdminLTE-3.2.0/plugins/summernote/summernote-bs4.min.js') }}"></script>
-    <!-- overlayScrollbars -->
-    <script src="{{ asset('AdminLTE-3.2.0/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js') }}"></script>
-    <!-- AdminLTE App -->
-    <script src="{{ asset('AdminLTE-3.2.0/dist/js/adminlte.js') }}"></script>
-    <!-- DataTables -->
-    <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.10.21/js/dataTables.bootstrap4.min.js"></script>
 </body>
 
 </html>

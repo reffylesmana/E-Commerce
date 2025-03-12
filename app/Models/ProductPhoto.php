@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 class ProductPhoto extends Model
 {
 
+    protected $fillable = ['photo', 'product_id'];
     protected static function boot()
     {
         parent::boot();

@@ -1,45 +1,56 @@
-<nav class="main-header navbar navbar-expand navbar-white navbar-light py-3 fixed-top">
-  <!-- Left navbar links -->
-  <ul class="navbar-nav">
-    <li class="nav-item">
-      <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
-    </li>
-  </ul>
+<header class="bg-white shadow-sm">
+    <div class="flex items-center justify-between p-4">
+        <!-- Left Section -->
+        <div class="flex items-center gap-4">
+            <h1 class="text-xl font-semibold">@yield('title', 'Dashboard')</h1>
+        </div>
 
-  <!-- Right navbar links -->
-  <ul class="navbar-nav ml-auto d-flex align-items-center">
-    <!-- Username -->
-    <h4 class="username mb-0 mr-3">{{ auth()->user()->name }}</h4>
-    
-    <!-- Dropdown for Profile Picture -->
-    <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-expanded="false">
-          @auth
-          <div class="relative hidden sm:flex">
-              <button class="flex items-center focus:outline-none hover:text-blue-500" id="userDropdown">
-                  <div class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-500 text-white text-sm font-bold" title="{{ Auth::user()->name }}">
-                      {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-                  </div>
-              </button>
-          </div>
-      @endauth
-        </a>
-        
-        <!-- Dropdown Menu -->
-        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-            <li><a class="dropdown-item" href="{{ route('profile.edit') }}"><i class="fas fa-user me-2"></i> Profile</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li>
-                <a class="dropdown-item" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                    <i class="fas fa-sign-out-alt me-2"></i>Logout
-                </a>
-                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                    @csrf
-                </form>
-            </li>
-        </ul>
-    </li>
-</ul>
-</nav>
+        <!-- Right Section -->
+        <div class="flex items-center gap-4">
+            <!-- Notification -->
+            <div class="relative">
+                <button onclick="toggleDropdown('notificationDropdown')" 
+                        class="p-2 hover:bg-gray-100 rounded-full relative">
+                    <iconify-icon icon="heroicons:bell" class="text-2xl"></iconify-icon>
+                    <span class="absolute top-0 right-0 bg-red-500 text-white rounded-full w-4 h-4 text-xs">3</span>
+                </button>
+                <div id="notificationDropdown" class="dropdown-menu absolute bg-white shadow-lg rounded-lg mt-2 py-2 w-48">
+                    <a href="#" class="block px-4 py-2 hover:bg-gray-100">New order received</a>
+                    <a href="#" class="block px-4 py-2 hover:bg-gray-100">System alert</a>
+                </div>
+            </div>
 
-
+            <!-- User Profile -->
+            <div class="relative dropdown-parent">
+                <button onclick="toggleDropdown('profileDropdown')" 
+                        class="flex items-center gap-2 p-2 hover:bg-gray-100 rounded-lg">
+                    @if(auth()->user()->avatar)
+                        <img src="{{ auth()->user()->avatar }}" 
+                             alt="User" 
+                             class="w-8 h-8 rounded-full object-cover">
+                    @else
+                        @php
+                            $name = auth()->user()->name ?? 'User';
+                            $initials = collect(explode(' ', $name))->map(function ($word) {
+                                return strtoupper(substr($word, 0, 1));
+                            })->take(2)->join('');
+                        @endphp
+                        <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-medium">
+                            {{ $initials }}
+                        </div>
+                    @endif
+                    <span class="nav-text">{{ $name }}</span>
+                </button>
+                <div id="profileDropdown" class="dropdown-menu absolute bg-white shadow-lg rounded-lg mt-2 py-2 w-48">
+                    <a href="{{ route('profile.edit') }}" class="block px-4 py-2 hover:bg-gray-100">Profile</a>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="w-full text-left px-4 py-2 hover:bg-gray-100">
+                            Logout
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>

@@ -39,6 +39,7 @@ class CategoryResource extends Resource
                 FileUpload::make('photo')
                     ->required()
                     ->image()
+                    ->visibility('public') 
                     ->maxSize(1024)
                     ->directory('category-photos')
                     ->visibility('public')
@@ -52,7 +53,9 @@ class CategoryResource extends Resource
         return $table
             ->columns([
                 ImageColumn::make('photo')
-                    ->label('Foto Kategori'),
+                    ->label('Foto Kategori')
+                    ->getStateUsing(fn ($record) => $record->photo ? asset('storage/' . $record->photo) : asset('path/to/default/category.png'))
+                    ->rounded(), 
                 TextColumn::make('name')
                     ->label('Nama Kategori')
                     ->sortable(),

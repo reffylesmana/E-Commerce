@@ -2,37 +2,26 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Category extends Model
 {
-    //
+    use HasFactory, SoftDeletes;
 
-    protected static function boot()
+    protected $fillable = [
+        'name',
+        'photo',
+    ];
+
+    public function stores()
     {
-        parent::boot();
-
-        static::deleting(function ($category) {
-            // Hapus file foto kategori
-            if ($category->photo) {
-                Storage::disk('public')->delete($category->photo); // Menghapus file dari public/storage
-            }
-        });
-        static::updating(function ($category) {
-            if ($category->isDirty('photo')) {
-                $oldPhoto = $category->getOriginal('photo'); // Foto lama sebelum update
-                if ($oldPhoto) {
-                    Storage::disk('public')->delete($oldPhoto); // Hapus foto lama
-                }
-            }
-        });
+        return $this->belongsToMany(Store::class, 'store_category');
     }
 
-    public function products(): HasMany
+    public function photos()
     {
-        return $this->hasMany(Product::class);
+        return $this->hasMany(CategoryPhoto::class);
     }
-
 }

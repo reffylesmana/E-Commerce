@@ -18,11 +18,13 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
-    // protected $fillable = [
-    //     'name',
-    //     'email',
-    //     'password',
-    // ];
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'username',
+        'role',
+    ];
 
     public function getRouteKeyName(): string
     {
@@ -62,4 +64,18 @@ class User extends Authenticatable
         return $this->hasMany(Cart::class);
     }
 
+    public function storesOwned()
+    {
+        return $this->hasMany(Store::class, 'user_id');
+    }
+
+    public function storesCreated()
+    {
+        return $this->hasMany(Store::class, 'created_by');
+    }
+
+    public function store()
+    {
+        return $this->hasOne(Store::class);
+    }
 }

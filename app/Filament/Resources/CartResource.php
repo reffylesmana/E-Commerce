@@ -23,6 +23,7 @@ class CartResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
     protected static ?string $label = 'Keranjang';
+    protected static ?string $navigationGroup = 'Transaksi';
     protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form

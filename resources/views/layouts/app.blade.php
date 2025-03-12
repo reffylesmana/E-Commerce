@@ -1,147 +1,174 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TeknoShop</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-    <!-- Swiper CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
+    <meta name="theme-color" content="#4f46e5">
+    <title>@yield('title', 'TeknoShop')</title>
     <link rel="icon" href="{{ asset('img/logo.png') }}" type="image/x-icon">
+    <meta name="description" content="@yield('description', 'Discover the latest in technology with TechStore.')">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    
+    <!-- AOS CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
 </head>
-
-<body>
-    <!-- Navbar -->
-    <nav class="bg-white shadow-md overflow-x-hidden fixed top-0 left-0 w-full z-50">
-        <div class="container mx-auto px-4 flex justify-between items-center py-3">
-            <!-- Left Section: Logo & Menu (Visible only in medium screens and above) -->
-            <div class="flex items-center hidden sm:flex">
-                <!-- Logo -->
-                <img src="{{ asset('img/logo.png') }}" alt="TeknoShop Logo" class="h-8 w-auto">
-                <!-- Menu -->
-                <ul class="ml-6 flex space-x-4 sm:space-x-6 sm:text-lg sm:text-gray-600 sm:justify-center sm:mt-2 sm:ml-10 sm:flex-row">
-                    <li><a href="/" class="text-gray-600 hover:text-blue-500">Beranda</a></li>
-                    <li><a href="/products" class="text-gray-600 hover:text-blue-500">Produk</a></li>
-                </ul>
+<body class="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 pb-16 md:pb-0">
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-blue-600 to-purple-600 text-white sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+            <!-- Logo -->
+            <div class="flex items-center">
+                <a href="/" class="text-2xl font-bold tracking-tighter flex items-center">
+                    <img src="{{ asset('img/logo.png') }}" alt="TechStore Logo" class="h-10 w-10 mr-2">
+                    <span class="hidden sm:inline">TechnoShop</span>
+                </a>
             </div>
-
-            <!-- Middle Section: Search Bar (Visible always) -->
-            <div class="flex-grow mx-4 sm:w-full sm:flex sm:justify-center">
-                <form action="/search" method="GET" class="flex w-full max-w-lg">
-                    <input type="text" class="flex-1 py-2 px-4 border border-gray-300 border-r-0 rounded-l-full focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Cari produk" name="search" value="{{ request()->search ? request()->search : '' }}">
-                    <button type="submit" class="bg-white border border-gray-300 border-l-0 rounded-r-full px-4 flex items-center justify-center hover:bg-gray-100 focus:ring-2 focus:ring-blue-500">
-                        <i class="bi bi-search text-gray-500"></i>
-                    </button>
-                </form>
+            
+            <!-- Desktop Navigation -->
+            <nav class="hidden lg:flex items-center space-x-6">
+                <input type="search" placeholder="Search products..." class="px-4 py-2 rounded-full bg-white bg-opacity-20 text-white placeholder-gray-200 focus:outline-none focus:ring-2 focus:ring-white">
+                @foreach(['Laptops', 'Smartphones', 'Gaming'] as $item)
+                    <a href="#" class="hover:text-blue-200 transition-colors duration-200 text-sm uppercase tracking-wider">{{ $item }}</a>
+                @endforeach
+            </nav>
+            
+            <!-- Mobile Search and Cart -->
+            <div class="flex items-center space-x-4">
+                <!-- Search icon for mobile -->
+                <button class="lg:hidden focus:outline-none focus:ring-2 focus:ring-white rounded-full p-1" onclick="toggleSearch()">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </button>
+                
+                <!-- Desktop icons -->
+                <a href="/account" class="hidden lg:block focus:outline-none focus:ring-2 focus:ring-white rounded-full p-1">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                </a>
+                
+                <!-- Cart icon (visible on all screens) -->
+                <a href="/carts" class="relative focus:outline-none focus:ring-2 focus:ring-white rounded-full p-1">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                    </svg>
+                    <span class="absolute -top-1 -right-1 bg-red-500 text-xs rounded-full h-4 w-4 flex items-center justify-center">3</span>
+                </a>
+                
+                <!-- Dark mode toggle (desktop only) -->
+                <button onclick="toggleDarkMode()" class="hidden lg:block focus:outline-none focus:ring-2 focus:ring-white rounded-full p-1">
+                    <svg class="h-5 w-5 dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                    </svg>
+                    <svg class="h-5 w-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707"></path>
+                    </svg>
+                </button>
             </div>
+        </div>
+        
+        <!-- Mobile Search Bar (hidden by default) -->
+        <div id="mobile-search" class="lg:hidden bg-blue-700 p-4 hidden">
+            <input type="search" placeholder="Search products..." class="w-full px-4 py-2 rounded-full bg-white bg-opacity-20 text-white placeholder-gray-200 focus:outline-none focus:ring-2 focus:ring-white">
+        </div>
+        
+        <!-- Mobile Products Menu (hidden by default) -->
+        <div id="mobile-products-menu" class="lg:hidden bg-blue-700 p-4 hidden">
+            @foreach(['Laptops', 'Smartphones', 'Accessories', 'Gaming'] as $item)
+                <a href="#" class="block py-2 hover:text-blue-200 transition-colors duration-200 text-sm uppercase tracking-wider">{{ $item }}</a>
+            @endforeach
+        </div>
+    </header>
 
-            <!-- Right Section: Cart & User Icon -->
-            <div class="flex items-center space-x-6 sm:flex-none">
-                <!-- Cart -->
-                <div class="relative">
-                    <a href="/carts" class="text-gray-600 hover:text-blue-500 text-lg">
-                        <i class="bi bi-cart"></i>
-                    </a>
-                    <span class="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5"></span>
-                </div>
-
-                <!-- Hamburger Menu (visible on sm) -->
-                <div class="relative sm:hidden">
-                    <button class="text-gray-600 hover:text-blue-500 focus:outline-none" id="hamburgerMenuButton">
-                        <i class="bi bi-list text-lg"></i>
-                    </button>
-                </div>
-
-                <!-- Authentication Links -->
-                @guest
-                    <div class="hidden sm:flex space-x-4">
-                        <a href="{{ route('login') }}" class="text-gray-600 hover:text-blue-500">{{ __('Masuk') }}</a>
-                        <a href="{{ route('register') }}" class="text-gray-600 hover:text-blue-500">{{ __('Daftar') }}</a>
-                    </div>
-                @endguest
-
-                @auth
-                    <div class="relative hidden sm:flex">
-                        <button class="flex items-center focus:outline-none hover:text-blue-500" id="userDropdown">
-                            <div class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-500 text-white text-sm font-bold" title="{{ Auth::user()->name }}">
-                                {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-                            </div>
-                        </button>
-                    </div>
-                @endauth
-            </div>
+    <!-- Main Content -->
+    <main>
+        @yield('content')
+    </main>
+    
+    <!-- Mobile Bottom Navigation -->
+    <nav class="lg:hidden fixed bottom-0 left-0 right-0 bg-gradient-to-r from-blue-600 to-purple-600 text-white z-50">
+        <div class="flex justify-around items-center py-3">
+            <!-- Beranda (Home) -->
+            <a href="/" class="flex flex-col items-center">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                </svg>
+                <span class="text-xs mt-1">Beranda</span>
+            </a>
+            
+            <!-- Produk (Products) -->
+            <a href="#" class="flex flex-col items-center" onclick="toggleProductsMenu(); return false;">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>
+                </svg>
+                <span class="text-xs mt-1">Produk</span>
+            </a>
+            
+            <!-- Akun (Account) -->
+            <a href="/account" class="flex flex-col items-center">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+                <span class="text-xs mt-1">Akun</span>
+            </a>
+            
+            <!-- Setting -->
+            <a href="/settings" class="flex flex-col items-center">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+                <span class="text-xs mt-1">Setting</span>
+            </a>
         </div>
     </nav>
 
-    <!-- Modal for Profile and Logout -->
-    <div class="fixed top-4 right-4 z-50 hidden bg-white shadow-lg border border-gray-300 rounded-lg p-4" id="profileModal">
-        <div class="text-gray-700">
-            @guest
-                <div class="flex flex-col space-y-4">
-                    <a href="{{ route('login') }}" class="px-6 py-2 bg-blue-500 text-white rounded-md text-lg font-medium hover:bg-white hover:text-blue-500 border border-blue-500 transition-all">
-                        {{ __('Masuk') }}
-                    </a>
-                    <a href="{{ route('register') }}" class="px-6 py-2 bg-white text-blue-500 rounded-md text-lg font-medium hover:bg-blue-500 hover:text-white border border-blue-500 transition-all">
-                        {{ __('Daftar') }}
-                    </a>
-                </div>
-            @endguest
-
-            @auth
-
-                <a href="/edit-profile" class="text-blue-500 hover:text-blue-700">Edit Profile</a>
-            @endauth
-
-            <hr class="my-4 border-t border-gray-300">
-
-            <div class="flex flex-col space-y-3">
-                <a href="{{ route('logout') }}" class="text-lg text-gray-700 hover:text-red-500" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                    {{ __('Logout') }}
-                </a>
-                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
-                    @csrf
-                </form>
-            </div>
-        </div>
-    </div>
-
-    @yield('content')
-
-    <!-- Swiper JS -->
-    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
-
+    <!-- Scripts -->
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const swiper = new Swiper('.swiper', {
-                loop: true,
-                autoplay: {
-                    delay: 5000,
-                },
-                pagination: {
-                    el: '.swiper-pagination',
-                    clickable: true,
-                },
-            });
+        // Initialize AOS
+        AOS.init({
+            duration: 1000,
+            once: true,
         });
 
-        const hamburgerMenuButton = document.getElementById('hamburgerMenuButton');
-        const profileModal = document.getElementById('profileModal');
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            if (html.classList.contains("dark")) {
+                html.classList.remove("dark");
+                localStorage.setItem("theme", "light");
+            } else {
+                html.classList.add("dark");
+                localStorage.setItem("theme", "dark");
+            }
+        }
 
-        // Show profile modal
-        const userDropdownButton = document.getElementById('userDropdown');
-        userDropdownButton.addEventListener('click', () => {
-            profileModal.classList.remove('hidden');
-        });
-
-        // Close profile modal when clicked outside
-        window.addEventListener('click', (event) => {
-            if (!event.target.closest('#userDropdown') && !event.target.closest('#profileModal')) {
-                profileModal.classList.add('hidden');
+        // Pastikan tema tetap tersimpan setelah refresh
+        document.addEventListener("DOMContentLoaded", () => {
+            if (localStorage.getItem("theme") === "dark") {
+                document.documentElement.classList.add("dark");
             }
         });
+        
+        // Mobile search toggle
+        function toggleSearch() {
+            document.getElementById('mobile-search').classList.toggle('hidden');
+            // Hide products menu when search is toggled
+            document.getElementById('mobile-products-menu').classList.add('hidden');
+        }
+        
+        // Mobile products menu toggle
+        function toggleProductsMenu() {
+            document.getElementById('mobile-products-menu').classList.toggle('hidden');
+            // Hide search when products menu is toggled
+            document.getElementById('mobile-search').classList.add('hidden');
+        }
     </script>
 </body>
-
 </html>

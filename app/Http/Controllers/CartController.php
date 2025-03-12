@@ -3,48 +3,37 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cart;
-use App\Models\Product;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class CartController extends Controller
 {
-
     public function index()
     {
-        return view('carts', [
-            'title' => 'Keranjang',
-            'carts' => Cart::with(['product.photos'])
-                ->where('user_id', Auth::id()) // Menggunakan ID pengguna yang sedang login
-                ->orderBy('created_at', 'DESC')
-                ->get(),
-        ]);
+        $cartItems = Cart::with('product')->get();
+        $subtotal = $cartItems->sum(function ($item) {
+            return $item->product->price * $item->quantity;
+        });
+        $discount = 0; // Implement your discount logic here
+        $total = $subtotal - $discount;
+
+        return view('carts', compact('cartItems', 'subtotal', 'discount', 'total'));
     }
 
-    public function store(Request $request, Product $product)
+    public function update(Request $request, Cart $item)
     {
-        // Validasi jika diperlukan
-        $request->validate([
-            'quantity' => 'required|integer|min:1',
-        ]);
+        $item->update(['quantity' => $request->quantity]);
+        return back();
+    }
 
-        // Cek apakah produk sudah ada di keranjang pengguna
-        $cart = Cart::where('user_id', Auth::id())
-            ->where('product_id', $product->id)
-            ->first();
+    public function remove(Cart $item)
+    {
+        $item->delete();
+        return back();
+    }
 
-        if ($cart) {
-            // Jika sudah ada, update jumlah
-            $cart->increment('quantity', $request->quantity);
-        } else {
-            // Jika belum ada, tambahkan produk ke keranjang
-            Cart::create([
-                'user_id' => Auth::id(), // Menggunakan ID pengguna yang sedang login
-                'product_id' => $product->id,
-                'quantity' => $request->quantity, // Tambahkan kuantitas berdasarkan input
-            ]);
-        }
-
-        return redirect('/carts')->with('success', "Produk $product->name berhasil ditambahkan ke keranjang");
+    public function applyCoupon(Request $request)
+    {
+        // Implement your coupon logic here
+        return back();
     }
 }

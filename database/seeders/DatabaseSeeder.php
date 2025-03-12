@@ -37,18 +37,26 @@ class DatabaseSeeder extends Seeder
                 'updated_at' => Carbon::now(),
             ],
             [
-                'name' => 'reffy',
-                'username' => 'reffy lesmana',
+                'name' => 'reffy lesmana',
+                'username' => 'reffy',
                 'email' => 'reffy@gmail.com',
                 'role' => 'buyer',
                 'is_admin' => 0,
-                'password' => bcrypt('password'),
+                'password' => bcrypt('reffy123'),
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ],
+            [
+                'name' => 'tataq bayu',
+                'username' => 'tataq',
+                'email' => 'tataq@gmail.com',
+                'role' => 'seller',
+                'is_admin' => 0,
+                'password' => bcrypt('tataq123'),
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
         ]);
-
-
 
     }
 }

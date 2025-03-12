@@ -20,7 +20,8 @@ class ReviewResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-chat-bubble-left-right';
     protected static ?string $navigationLabel = 'Ulasan';
     protected static ?string $label = 'Ulasan';
-    protected static ?int $navigationSort = 4;
+    protected static ?string $navigationGroup = 'Transaksi';
+    protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
     {
