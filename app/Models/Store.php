@@ -10,17 +10,7 @@ class Store extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'name',
-        'slug',
-        'description',
-        'logo',
-        'user_id',
-        'created_by',
-        'is_approved',
-        'is_official',
-        'is_active',
-    ];
+    protected $fillable = ['name', 'slug', 'description', 'logo', 'user_id', 'created_by', 'is_approved', 'is_official', 'is_active'];
 
     protected $casts = [
         'is_approved' => 'boolean',
@@ -33,6 +23,11 @@ class Store extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
+
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by');
@@ -40,8 +35,7 @@ class Store extends Model
 
     public function categories()
     {
-        return $this->belongsToMany(Category::class, 'store_category')
-            ->withTimestamps();
+        return $this->belongsToMany(Category::class, 'store_category')->withTimestamps();
     }
 
     protected static function boot()

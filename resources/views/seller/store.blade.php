@@ -2,6 +2,68 @@
 @section('title', 'Pengaturan Toko')
 @section('content')
 
+<style>
+    /* Improved Floating Label CSS */
+    input.peer, textarea.peer {
+        transition: border-color 0.2s ease-in-out;
+    }
+    
+    input.peer::placeholder, textarea.peer::placeholder {
+        color: transparent;
+    }
+    
+    /* This ensures the label stays at the top when there's content */
+    input.peer:not(:placeholder-shown) + label,
+    textarea.peer:not(:placeholder-shown) + label {
+        transform: translateY(-4px) scale(0.75);
+        top: 4px;
+        color: #6366f1; /* indigo-500 */
+    }
+    
+    /* Focus styles */
+    input.peer:focus + label,
+    textarea.peer:focus + label {
+        transform: translateY(-4px) scale(0.75);
+        top: 4px;
+        color: #6366f1; /* indigo-500 */
+    }
+    
+    /* TomSelect Custom Styles */
+    .ts-control {
+        @apply border-gray-300 rounded-lg shadow-sm transition-all duration-150;
+        padding: 0.5rem;
+    }
+
+    .ts-dropdown {
+        @apply rounded-lg shadow-lg border border-gray-200 mt-1;
+        max-height: 200px;
+    }
+
+    .ts-item {
+        @apply bg-indigo-100 text-indigo-800 rounded-md px-2 py-1 m-1 text-sm;
+    }
+
+    .ts-item .remove {
+        @apply text-indigo-500 hover:text-indigo-700;
+    }
+    
+    /* Animation for modal */
+    @keyframes modalAppear {
+        from { opacity: 0; transform: scale(0.95) translateY(10px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    
+    .animate-modal-appear {
+        animation: modalAppear 0.3s ease-out forwards;
+    }
+
+    @media (max-width: 640px) {
+        .sm\:w-11\/12 {
+            width: 91.666667% !important;
+        }
+    }
+</style>
+
 <div class="container mx-auto px-4 py-8 max-w-7xl">
     <h1 class="text-3xl font-bold mb-8 text-gray-800 relative">
         My Store
@@ -424,67 +486,5 @@
     window.openEditModal = openEditModal;
     window.closeModal = closeModal;
 </script>
-
-<style>
-    /* Improved Floating Label CSS */
-    input.peer, textarea.peer {
-        transition: border-color 0.2s ease-in-out;
-    }
-    
-    input.peer::placeholder, textarea.peer::placeholder {
-        color: transparent;
-    }
-    
-    /* This ensures the label stays at the top when there's content */
-    input.peer:not(:placeholder-shown) + label,
-    textarea.peer:not(:placeholder-shown) + label {
-        transform: translateY(-4px) scale(0.75);
-        top: 4px;
-        color: #6366f1; /* indigo-500 */
-    }
-    
-    /* Focus styles */
-    input.peer:focus + label,
-    textarea.peer:focus + label {
-        transform: translateY(-4px) scale(0.75);
-        top: 4px;
-        color: #6366f1; /* indigo-500 */
-    }
-    
-    /* TomSelect Custom Styles */
-    .ts-control {
-        @apply border-gray-300 rounded-lg shadow-sm transition-all duration-150;
-        padding: 0.5rem;
-    }
-
-    .ts-dropdown {
-        @apply rounded-lg shadow-lg border border-gray-200 mt-1;
-        max-height: 200px;
-    }
-
-    .ts-item {
-        @apply bg-indigo-100 text-indigo-800 rounded-md px-2 py-1 m-1 text-sm;
-    }
-
-    .ts-item .remove {
-        @apply text-indigo-500 hover:text-indigo-700;
-    }
-    
-    /* Animation for modal */
-    @keyframes modalAppear {
-        from { opacity: 0; transform: scale(0.95) translateY(10px); }
-        to { opacity: 1; transform: scale(1) translateY(0); }
-    }
-    
-    .animate-modal-appear {
-        animation: modalAppear 0.3s ease-out forwards;
-    }
-
-    @media (max-width: 640px) {
-        .sm\:w-11\/12 {
-            width: 91.666667% !important;
-        }
-    }
-</style>
 
 @endsection

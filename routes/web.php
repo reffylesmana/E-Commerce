@@ -25,8 +25,7 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // Account
-    Route::get('/account', [AccountController::class, 'index'])->name('account');
-
+Route::get('/account', [AccountController::class, 'index'])->name('account');
 
 // Profile
 Route::middleware(['auth'])->group(function () {
@@ -36,27 +35,39 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // Seller Routes
-Route::middleware(['auth', \App\Http\Middleware\RoleMiddleware::class . ':seller'])->prefix('seller')->group(function () {
-    // Dashboard
-    Route::get('/dashboard', function () {
-        return view('seller.dashboard');
-    })->name('seller.dashboard');
+Route::middleware(['auth', \App\Http\Middleware\RoleMiddleware::class . ':seller'])
+    ->prefix('seller')
+    ->group(function () {
+        // Dashboard
+        Route::get('/dashboard', function () {
+            return view('seller.dashboard');
+        })->name('seller.dashboard');
 
-    // Store
-    Route::prefix('store')->group(function () {
-        Route::get('/', [StoreController::class, 'index'])->name('seller.store.index');
-        Route::get('/create', [StoreController::class, 'create'])->name('seller.store.create');
-        Route::post('/', [StoreController::class, 'store'])->name('seller.store.store');
-        Route::put('/{id}', [StoreController::class, 'update'])->name('seller.store.update');
-    });
+        // Store
+        Route::prefix('store')->group(function () {
+            Route::get('/', [StoreController::class, 'index'])->name('seller.store.index');
+            Route::get('/create', [StoreController::class, 'create'])->name('seller.store.create');
+            Route::post('/', [StoreController::class, 'store'])->name('seller.store.store');
+            Route::put('/{id}', [StoreController::class, 'update'])->name('seller.store.update');
+        });
 
-    // Products
-    Route::prefix('products')->group(function () {
-        Route::get('/', [ProductController::class, 'sellerProducts'])->name('seller.products.index');
-        Route::get('/create', [ProductController::class, 'create'])->name('seller.products.create');
-        Route::post('/', [ProductController::class, 'store'])->name('seller.products.store');
+        // Products
+        Route::prefix('products')
+            ->name('seller.products.')
+            ->group(function () {
+                Route::get('/', [ProductController::class, 'sellerProducts'])->name('index');
+                Route::get('/create', [ProductController::class, 'create'])->name('create');
+                Route::post('/', [ProductController::class, 'store'])->name('store');
+                Route::get('/{product}/edit', [ProductController::class, 'edit'])->name('edit');
+                Route::put('/{product}', [ProductController::class, 'update'])->name('update');
+                Route::delete('/{product}', [ProductController::class, 'destroy'])->name('destroy');
+
+                // Image handling routes
+                Route::post('/upload-temp-image', [ProductController::class, 'uploadTempImage'])->name('upload-temp-image');
+                Route::post('/remove-temp-image', [ProductController::class, 'removeTempImage'])->name('remove-temp-image');
+                Route::delete('/images/{image}', [ProductController::class, 'deleteImage'])->name('delete-image');
+            });
     });
-});
 
 // Authentication
 require __DIR__ . '/auth.php';

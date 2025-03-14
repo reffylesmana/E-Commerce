@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ config('app.name', 'TailAdmin Dashboard') }}</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="description" content="TailAdmin Dashboard Template">
 
     <!-- Iconify CDN -->
@@ -13,18 +14,25 @@
     <!-- SweetAlert CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
+    <!-- DataTables Styling -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
+
+    <!-- Select2 Dropdown -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
+
+    <!-- Tom Select (Alternative Select) -->
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+
     <!-- Styles -->
     @vite('resources/css/app.css')
-    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 
     <!-- Scripts -->
     @vite('resources/js/app.js')
     @php
-    $user = auth()->user();
-    $store = $user->store ?? null;
-    $storeApproved = $store && $store->is_approved;
-@endphp
+        $user = auth()->user();
+        $store = $user->store ?? null;
+        $storeApproved = $store && $store->is_approved;
+    @endphp
     <style>
         /* Custom CSS */
 
@@ -118,11 +126,26 @@
     </div>
 
 
+    <!-- JavaScript Libraries -->
+    <!-- jQuery (Required oleh DataTables) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- DataTables -->
+    <!-- Versi 1.10.25 (Legacy) -->
     <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap5.min.js"></script>
-    <!-- SweetAlert JS -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- TomSelect -->
+
+    <!-- DataTables Versi 1.11.5 (Disarankan) -->
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+
+    <!-- Select2 (Untuk dropdown yang lebih baik) -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <!-- SweetAlert2 (Untuk notifikasi modern) -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.8/dist/sweetalert2.all.min.js"></script>
+
+    <!-- Tom Select (Alternatif select box) -->
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 
     <script>
