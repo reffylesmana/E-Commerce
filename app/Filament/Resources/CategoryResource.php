@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\CategoryResource\Pages;
-use App\Filament\Resources\CategoryResource\RelationManagers;
 use App\Models\Category;
 use Filament\Forms;
 use Filament\Forms\Components\FileUpload;
@@ -26,7 +25,10 @@ class CategoryResource extends Resource
     protected static ?string $navigationLabel = 'Kategori';
     protected static ?string $label = 'Kategori';
     protected static ?string $navigationGroup = 'Data Master';
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 2;
+    
+    // Fix the route key
+    protected static ?string $recordRouteKeyName = 'id';
 
     public static function form(Form $form): Form
     {
@@ -51,6 +53,7 @@ class CategoryResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->query(Category::query()->orderBy('created_at', 'desc')) 
             ->columns([
                 ImageColumn::make('photo')
                     ->label('Foto Kategori')
@@ -66,6 +69,7 @@ class CategoryResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
+                Tables\Actions\RestoreAction::make(), 
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -75,11 +79,11 @@ class CategoryResource extends Resource
                         ->modalSubmitActionLabel('Ya, pindahkan!')
                         ->modalCancelActionLabel('Jangan dulu')
                         ->modalIcon('heroicon-o-trash')
-                        ->successNotification(fn ($records) =>
+                        ->successNotification(
                             Notification::make()
                                 ->success()
                                 ->title('Berhasil Dihapus.')
-                                ->body('Sebanyak ' . $records->count() . ' kategori berhasil dipindahkan ke sampah.')
+                                ->body(fn ($records) => 'Sebanyak ' . $records->count() . ' kategori berhasil dipindahkan ke sampah.')
                         ),
                     Tables\Actions\RestoreBulkAction::make()
                         ->modalHeading('Yakin ingin memulihkan kategori?')
@@ -87,11 +91,11 @@ class CategoryResource extends Resource
                         ->modalSubmitActionLabel('Ya, pulihkan!')
                         ->modalCancelActionLabel('Batal')
                         ->modalIcon('heroicon-o-arrow-left-start-on-rectangle')
-                        ->successNotification(fn ($records) =>
+                        ->successNotification(
                             Notification::make()
                                 ->success()
                                 ->title('Dipulihkan.')
-                                ->body('Sebanyak ' . $records->count() . ' kategori berhasil dipulihkan.')
+                                ->body(fn ($records) => 'Sebanyak ' . $records->count() . ' kategori berhasil dipulihkan.')
                         ),
                 ]),
             ]);
@@ -104,3 +108,4 @@ class CategoryResource extends Resource
         ];
     }
 }
+

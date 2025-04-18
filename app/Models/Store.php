@@ -10,12 +10,19 @@ class Store extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'slug', 'description', 'logo', 'user_id', 'created_by', 'is_approved', 'is_official', 'is_active'];
+    protected $fillable = ['name', 'slug', 'description', 'logo', 'user_id', 'created_by', 'is_approved', 'is_official', 'is_active','is_banned',
+    'banned_until',
+    'violation_count',
+    'last_violation_reason',
+    'last_violation_at',];
 
     protected $casts = [
         'is_approved' => 'boolean',
         'is_official' => 'boolean',
         'is_active' => 'boolean',
+        'banned_until' => 'datetime',
+    'is_banned' => 'boolean',
+    'last_violation_at' => 'datetime',
     ];
 
     public function user()

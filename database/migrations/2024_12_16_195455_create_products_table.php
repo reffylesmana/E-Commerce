@@ -20,7 +20,8 @@ return new class extends Migration
             $table->integer('price');
             $table->text('description');
             $table->string('size');
-            $table->integer('weight');
+            $table->decimal('weight', 8, 2)->change();
+            $table->boolean('is_active')->default(true);
             $table->integer('stock');
             $table->softDeletes();
             $table->timestamps();

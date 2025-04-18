@@ -27,14 +27,14 @@ class Product extends Model
         'photo',
     ];
 
-    public function getRouteKeyName(): string
-    {
-        return 'slug';
-    }
-
     public function owner(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'id');
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function getRouteKeyName()
+    {
+        return 'slug';
     }
 
     public function category(): BelongsTo
@@ -54,6 +54,16 @@ class Product extends Model
 
     public function store(): BelongsTo
     {
-        return $this->belongsTo(Store::class); 
+        return $this->belongsTo(Store::class);
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
+    
+    public function seller()
+    {
+        return $this->belongsTo(User::class, 'user_id'); // user_id = seller
     }
 }

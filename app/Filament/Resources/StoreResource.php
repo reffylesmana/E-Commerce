@@ -12,14 +12,17 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Actions\Action;
 use Filament\Notifications\Notification;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 
 class StoreResource extends Resource
 {
     protected static ?string $model = Store::class;
-    protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
-    protected static ?string $navigationLabel = 'Stores';
+    protected static ?string $navigationIcon = 'heroicon-o-building-storefront'; 
+    protected static ?string $navigationLabel = 'Toko';
     protected static ?string $recordTitleAttribute = 'name';
+    protected static ?string $navigationGroup = 'Data Master';
+    protected static ?int $navigationSort = 1;
 
     public static function form(Forms\Form $form): Forms\Form
     {
@@ -155,11 +158,15 @@ class StoreResource extends Resource
                     ->falseColor('danger'),
 
                 TextColumn::make('created_at')
-                    ->dateTime()
+                    ->dateTime('d M Y H:i')
                     ->sortable()
                     ->label('Created')
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort('created_at', 'desc')
+            ->deferLoading()
+            ->persistSortInSession()
+            ->persistSearchInSession()
             ->filters([
                 Tables\Filters\SelectFilter::make('approval_status')
                     ->options([
@@ -262,9 +269,7 @@ class StoreResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            // Tambahkan relasi jika diperlukan
-        ];
+        return [];
     }
 
     public static function getPages(): array

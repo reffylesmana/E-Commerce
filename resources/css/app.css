@@ -1,3 +1,152 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.pattern-circuit {
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1.5 0h21l-1.91 21.563L11.977 24l-8.564-2.438L1.5 0zm7.031 9.75l-.232-2.718 10.059.003.23-2.622L5.412 4.41l.698 8.01h9.126l-.326 3.426-2.91.804-2.955-.81-.188-2.11H6.248l.33 4.171L12 19.351l5.379-1.443.744-8.157H8.531z' fill='%23ffffff' fill-opacity='0.05'/%3E%3C/svg%3E");
+}
+
+
+@layer base {
+  :root {
+    /* Base colors */
+    --color-primary: 219 39% 55%; /* Blue-500 */
+    --color-primary-light: 217 91% 60%; /* Blue-400 */
+    --color-primary-dark: 221 83% 53%; /* Blue-600 */
+
+    /* Accent colors - complementary to primary */
+    --color-accent: 245 58% 51%; /* Indigo-500 */
+    --color-accent-light: 245 58% 61%; /* Indigo-400 */
+    --color-accent-dark: 245 58% 41%; /* Indigo-600 */
+
+    /* Neutral colors */
+    --color-neutral-50: 210 40% 98%;
+    --color-neutral-100: 214 32% 91%;
+    --color-neutral-200: 214 15% 85%;
+    --color-neutral-300: 213 10% 71%;
+    --color-neutral-400: 215 14% 56%;
+    --color-neutral-500: 215 16% 47%;
+    --color-neutral-600: 215 19% 35%;
+    --color-neutral-700: 215 25% 27%;
+    --color-neutral-800: 217 33% 17%;
+    --color-neutral-900: 222 47% 11%;
+
+    /* Success, warning, error colors */
+    --color-success: 142 76% 36%;
+    --color-warning: 38 92% 50%;
+    --color-error: 0 84% 60%;
+  }
+
+  .dark {
+    /* Darker theme colors */
+    --color-primary: 217 91% 60%; /* Blue-400 - brighter in dark mode */
+    --color-primary-light: 214 95% 70%; /* Blue-300 */
+    --color-primary-dark: 221 83% 53%; /* Blue-600 */
+
+    --color-accent: 245 58% 61%; /* Indigo-400 - brighter in dark mode */
+    --color-accent-light: 244 55% 71%; /* Indigo-300 */
+    --color-accent-dark: 245 58% 51%; /* Indigo-500 */
+
+    /* Darker neutral colors */
+    --color-neutral-50: 222 47% 11%;
+    --color-neutral-100: 217 33% 17%;
+    --color-neutral-200: 215 25% 27%;
+    --color-neutral-300: 215 19% 35%;
+    --color-neutral-400: 215 16% 47%;
+    --color-neutral-500: 215 14% 56%;
+    --color-neutral-600: 213 10% 71%;
+    --color-neutral-700: 214 15% 85%;
+    --color-neutral-800: 214 32% 91%;
+    --color-neutral-900: 210 40% 98%;
+
+    /* Success, warning, error colors - brighter in dark mode */
+    --color-success: 142 76% 45%;
+    --color-warning: 38 92% 60%;
+    --color-error: 0 84% 70%;
+  }
+
+  body {
+    font-family: "Inter", sans-serif;
+    @apply antialiased;
+  }
+
+  /* Custom scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-gray-100 dark:bg-slate-700 rounded-lg;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-blue-400 dark:bg-blue-600 rounded-lg;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-blue-500 dark:bg-blue-500;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+
+  .btn-primary {
+    @apply bg-blue-500 hover:bg-blue-600 text-white focus:ring-blue-500;
+  }
+
+  .btn-secondary {
+    @apply bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 focus:ring-blue-500;
+  }
+
+  .btn-accent {
+    @apply bg-indigo-500 hover:bg-indigo-600 text-white focus:ring-indigo-500;
+  }
+
+  .card {
+    @apply bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden;
+  }
+
+  .input {
+    @apply px-4 py-2 rounded-lg bg-gray-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-200 dark:border-slate-600;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-blue {
+    @apply bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300;
+  }
+
+  .badge-green {
+    @apply bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300;
+  }
+
+  .badge-red {
+    @apply bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300;
+  }
+
+  .badge-yellow {
+    @apply bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-300;
+  }
+}
+

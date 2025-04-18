@@ -1,165 +1,466 @@
 @extends('layouts.app')
 
+@section('title', $product->name)
+
 @section('content')
-<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        <!-- Product Images -->
-        <div class="space-y-4">
-            <div class="aspect-w-1 aspect-h-1 bg-gray-200 rounded-lg overflow-hidden">
-                <img src="{{ $product->photos->first()?->photo ? Storage::url($product->photos->first()->photo) : asset('default-image.jpg') }}" alt="{{ $product->name }}" class="w-full h-full object-center object-cover">
-            </div>
-            <div class="grid grid-cols-4 gap-4">
-                @foreach($product->photos as $photo)
-                    <button class="aspect-w-1 aspect-h-1 bg-gray-200 rounded-md overflow-hidden focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        <img src="{{ $photo->photo ? Storage::url($photo->photo) : asset('default-image.jpg') }}" alt="{{ $product->name }}" class="w-full h-full object-center object-cover">
-                    </button>
-                @endforeach
-            </div>
-        </div>
-
-        <!-- Product Details -->
-        <div class="space-y-6">
-            <div>
-                <h1 class="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">{{ $product->name }}</h1>
-                <p class="mt-1 text-sm text-gray-500">{{ $product->category->name }}</p>
-            </div>
-
-            <div class="flex items-center">
-                <div class="flex items-center">
-                    @for($i = 1; $i <= 5; $i++)
-                        <svg class="h-5 w-5 {{ $i <= 4 ? 'text-yellow-400' : 'text-gray-300' }}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
-                    @endfor
-                </div>
-                <p class="ml-2 text-sm text-gray-500">(42 reviews)</p>
-            </div>
-
-            <div class="mt-4 flex items-center">
-                <h2 class="text-2xl font-bold text-gray-900">Rp {{ number_format($product->price, 0, ',', '.') }}</h2>
-                @if($product->discount > 0)
-                    <p class="ml-4 text-sm font-medium text-gray-500 line-through">Rp {{ number_format($product->original_price, 0, ',', '.') }}</p>
-                    <p class="ml-2 text-sm font-medium text-red-500">{{ $product->discount }}% OFF</p>
-                @endif
-            </div>
-
-            <div class="border-t border-gray-200 pt-4">
-                <h3 class="text-sm font-medium text-gray-900">Description</h3>
-                <div class="mt-4 prose prose-sm text-gray-500">
-                    {!! $product->description !!}
-                </div>
-            </div>
-
-            <div class="border-t border-gray-200 pt-4">
-                <h3 class="text-sm font-medium text-gray-900">Details</h3>
-                <dl class="mt-4 space-y-4">
-                    <div class="flex items-center justify-between">
-                        <dt class="text-sm text-gray-600">Size</dt>
-                        <dd class="text-sm font-medium text-gray-900">{{ $product->size }}</dd>
+    <div class="container mx-auto px-4 py-8">
+        <!-- Breadcrumb -->
+        <nav class="flex mb-6" aria-label="Breadcrumb">
+            <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                <li class="inline-flex items-center">
+                    <a href="{{ route('home') }}"
+                        class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
+                        <i class="iconify mr-2" data-icon="lucide:home"></i>
+                        Home
+                    </a>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <i class="iconify text-gray-400" data-icon="lucide:chevron-right"></i>
+                        <a href="/products"
+                            class="ml-1 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 md:ml-2">Products</a>
                     </div>
-                    <div class="flex items-center justify-between">
-                        <dt class="text-sm text-gray-600">Weight</dt>
-                        <dd class="text-sm font-medium text-gray-900">{{ $product->weight }}kg</dd>
+                </li>
+                <li aria-current="page">
+                    <div class="flex items-center">
+                        <i class="iconify text-gray-400" data-icon="lucide:chevron-right"></i>
+                        <span class="ml-1 text-gray-500 dark:text-gray-400 md:ml-2">{{ $product->name }}</span>
                     </div>
-                    <div class="flex items-center justify-between">
-                        <dt class="text-sm text-gray-600">Stock</dt>
-                        <dd class="text-sm font-medium {{ $product->stock > 10 ? 'text-green-600' : 'text-red-600' }}">
-                            {{ $product->stock > 0 ? $product->stock . ' available' : 'Out of stock' }}
-                        </dd>
-                    </div>
-                </dl>
-            </div>
+                </li>
+            </ol>
+        </nav>
 
-            <div class="mt-6">
-                <form method="post" action="/carts/add/{{ $product->slug }}" class="space-y-4">
-                    @csrf
-                    @if($product->variations->count() > 0)
-                        <div>
-                            <label for="variation" class="block text-sm font-medium text-gray-700">Select Variation</label>
-                            <select id="variation" name="variation_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                                @foreach($product->variations as $variation)
-                                    <option value="{{ $variation->id }}">{{ $variation->name }}</option>
-                                @endforeach
-                            </select>
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden" data-aos="fade-up">
+            <div class="md:flex">
+                <!-- Product Images Section -->
+                <div class="md:w-1/2 p-4 md:p-6">
+                    <div class="relative h-80 md:h-96 rounded-xl overflow-hidden mb-4 group" id="mainImageContainer">
+                        @if (count($photos) > 0)
+                            <img id="mainImage" src="{{ asset('storage/' . $photos[0]->photo) }}" alt="{{ $product->name }}"
+                                class="w-full h-full object-contain transition-all duration-500">
+                        @else
+                            <div class="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                                <i class="iconify text-gray-400 text-6xl" data-icon="lucide:image"></i>
+                            </div>
+                        @endif
+
+                        <!-- Image Navigation Arrows -->
+                        @if (count($photos) > 1)
+                            <button id="prevImageBtn"
+                                class="absolute left-2 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 rounded-full p-2 shadow-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 opacity-0 group-hover:opacity-100">
+                                <i class="iconify text-blue-600 dark:text-blue-400" data-icon="lucide:chevron-left"></i>
+                            </button>
+                            <button id="nextImageBtn"
+                                class="absolute right-2 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 rounded-full p-2 shadow-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 opacity-0 group-hover:opacity-100">
+                                <i class="iconify text-blue-600 dark:text-blue-400" data-icon="lucide:chevron-right"></i>
+                            </button>
+                        @endif
+                    </div>
+
+                    <!-- Thumbnails -->
+                    @if (count($photos) > 1)
+                        <div class="flex space-x-2 overflow-x-auto pb-2 snap-x">
+                            @foreach ($photos as $index => $photo)
+                                <div class="w-20 h-20 flex-shrink-0 cursor-pointer border-2 hover:border-blue-500 rounded-lg overflow-hidden snap-start {{ $index === 0 ? 'border-blue-500' : 'border-transparent' }}"
+                                    data-index="{{ $index }}" data-src="{{ asset('storage/' . $photo->photo) }}"
+                                    onclick="changeMainImage(this)">
+                                    <img src="{{ asset('storage/' . $photo->photo) }}" alt="{{ $product->name }}"
+                                        class="w-full h-full object-cover">
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <!-- Mobile Pagination Indicators -->
+                        <div id="mobileIndicators" class="flex justify-center mt-4 gap-2 md:hidden">
+                            @foreach ($photos as $index => $photo)
+                                <button
+                                    class="h-2 w-2 rounded-full transition-colors duration-300 {{ $index === 0 ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600' }}"
+                                    data-index="{{ $index }}"></button>
+                            @endforeach
                         </div>
                     @endif
-                    <div>
-                        <label for="quantity" class="block text-sm font-medium text-gray-700">Quantity</label>
-                        <input type="number" id="quantity" name="quantity" min="1" value="1" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                    </div>
-                    <button type="submit" class="w-full bg-indigo-600 border border-transparent rounded-md py-3 px-8 flex items-center justify-center text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        Add to Cart
-                    </button>
-                </form>
-                <button type="button" class="mt-4 w-full bg-gray-200 border border-transparent rounded-md py-3 px-8 flex items-center justify-center text-base font-medium text-gray-700 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
-                    <svg class="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
-                    </svg>
-                    Add to Wishlist
-                </button>
-            </div>
+                </div>
 
-            <div class="border-t border-gray-200 pt-4">
-                <h3 class="text-sm font-medium text-gray-900">Shipping & Returns</h3>
-                <p class="mt-4 text-sm text-gray-500">Free shipping on orders over Rp 1.000.000. 30-day return policy. <a href="#" class="font-medium text-indigo-600 hover:text-indigo-500">Learn more</a></p>
-            </div>
-        </div>
-    </div>
+                <!-- Product Details Section -->
+                <div class="md:w-1/2 p-4 md:p-6 md:border-l dark:border-gray-700">
+                    <div class="flex flex-col md:h-full">
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+                                    {{ $product->name }}</h1>
+                                <button
+                                    class="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors duration-300">
+                                    <i class="iconify text-2xl" data-icon="lucide:heart"></i>
+                                </button>
+                            </div>
 
-    <!-- Reviews Section -->
-    <div class="mt-16 border-t border-gray-200 pt-10">
-        <h2 class="text-2xl font-extrabold tracking-tight text-gray-900">Customer Reviews</h2>
-        <div class="mt-6 space-y-10">
-            @foreach(range(1, 3) as $review)
-                <div class="flex space-x-4">
-                    <div class="flex-none">
-                        <img class="h-10 w-10 rounded-full" src="https://via.placeholder.com/40" alt="Reviewer">
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium text-gray-900">John Doe</p>
-                        <div class="flex items-center mt-1">
-                            @for($i = 1; $i <= 5; $i++)
-                                <svg class="h-5 w-5 {{ $i <= 4 ? 'text-yellow-400' : 'text-gray-300' }}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                </svg>
-                            @endfor
+                            <div class="flex items-center mt-2">
+                                <div class="flex">
+                                    @for ($i = 1; $i <= 5; $i++)
+                                        <i class="iconify text-{{ $i <= 4 ? 'yellow' : 'gray' }}-400"
+                                            data-icon="lucide:star"></i>
+                                    @endfor
+                                </div>
+                                <span class="ml-2 text-gray-600 dark:text-gray-400 text-sm">(4.0) · {{ $product->views }}
+                                    views</span>
+                            </div>
+
+                            <div class="mt-2 flex items-center">
+                                <span class="text-gray-600 dark:text-gray-400">Category:</span>
+                                <a href="/products?category={{ $product->category_id }}"
+                                    class="ml-2 text-blue-600 dark:text-blue-400 hover:underline">
+                                    {{ $category->name }}
+                                </a>
+                            </div>
+
+                            <div class="mt-2 flex items-center">
+                                <span class="text-gray-600 dark:text-gray-400">Store:</span>
+                                <a href="{{ route('store', $store->slug) }}"
+                                    class="ml-2 flex items-center text-blue-600 dark:text-blue-400 hover:underline">
+                                    @if ($store->logo)
+                                        <img src="{{ asset('storage/' . $store->logo) }}" alt="{{ $store->name }}"
+                                            class="w-5 h-5 rounded-full mr-1">
+                                    @endif
+                                    {{ $store->name }}
+                                    @if ($store->is_official)
+                                        <span
+                                            class="ml-2 px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300 rounded-full">Official</span>
+                                    @endif
+                                </a>
+                            </div>
                         </div>
-                        <p class="mt-2 text-sm text-gray-500">Great product! Exactly as described and arrived quickly.</p>
+                        <div class="mt-6">
+                            <div class="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                                Rp {{ number_format($product->price, 0, ',', '.') }}
+                            </div>
+                            <div class="mt-1 flex items-center">
+                                <span
+                                    class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300 text-xs font-medium px-2.5 py-0.5 rounded-full flex items-center">
+                                    <i class="iconify mr-1" data-icon="lucide:check"></i>
+                                    In Stock ({{ $product->stock }})
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="mt-6">
+                            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Description</h2>
+                            <p class="mt-2 text-gray-600 dark:text-gray-300">{{ $product->description }}</p>
+                        </div>
+
+                        <div class="mt-8 flex space-x-4 md:mt-auto">
+                            <form action="{{ route('cart.add') }}" method="POST" class="flex-1">
+                                @csrf
+                                <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                <input type="hidden" name="quantity" value="1">
+                                <button type="submit"
+                                    class="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white font-bold py-3 px-6 rounded-lg transition duration-200 transform hover:scale-[1.02] flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                    </svg>
+                                    Add to Cart
+                                </button>
+                            </form>
+
+                            {{-- Di dalam bagian tombol wishlist --}}
+                            @auth
+                                @php
+                                    $isInWishlist = auth()
+                                        ->user()
+                                        ->wishlists()
+                                        ->where('product_id', $product->id)
+                                        ->exists();
+                                @endphp
+
+                                <button
+                                    class="text-{{ $isInWishlist ? 'red-600' : 'gray-400' }} hover:text-red-500 dark:hover:text-red-400 transition-colors duration-300 relative"
+                                    onclick="event.preventDefault(); document.getElementById('wishlist-form-{{ $product->id }}').submit()"
+                                    title="{{ $isInWishlist ? 'Hapus dari Wishlist' : 'Tambahkan ke Wishlist' }}">
+                                    <i class="iconify text-2xl" data-icon="lucide:heart"></i>
+                                    @if ($isInWishlist)
+                                        <div class="absolute inset-0 flex items-center justify-center">
+                                            <i class="iconify text-2xl text-red-600 absolute animate-ping"
+                                                data-icon="lucide:heart"></i>
+                                        </div>
+                                    @endif
+                                </button>
+
+                                <form id="wishlist-form-{{ $product->id }}"
+                                    action="{{ $isInWishlist ? route('wishlist.remove', $product->id) : route('wishlist.add') }}"
+                                    method="POST" class="hidden">
+                                    @csrf
+                                    @if ($isInWishlist)
+                                        @method('DELETE')
+                                    @endif
+                                    <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                </form>
+                            @else
+                                <button
+                                    class="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors duration-300"
+                                    onclick="window.location.href='{{ route('login') }}'"
+                                    title="Login untuk menambahkan ke Wishlist">
+                                    <i class="iconify text-2xl" data-icon="lucide:heart"></i>
+                                </button>
+                            @endauth
+                        </div>
                     </div>
                 </div>
-            @endforeach
-        </div>
-        <div class="mt-8 text-center">
-            <a href="#" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">View all reviews<span aria-hidden="true"> &rarr;</span></a>
-        </div>
-    </div>
-
-    <!-- Related Products -->
-    @if(count($productSuggets) > 0)
-        <div class="mt-16 border-t border-gray-200 pt-10">
-            <h2 class="text-2xl font-extrabold tracking-tight text-gray-900">Customers also purchased</h2>
-            <div class="mt-6 grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
-                @foreach($productSuggets as $suggestedProduct)
-                    <div class="group relative">
-                        <div class="w-full min-h-80 bg-gray-200 aspect-w-1 aspect-h-1 rounded-md overflow-hidden group-hover:opacity-75 lg:h-80 lg:aspect-none">
-                            <img src="{{ $suggestedProduct->photos->first()?->photo ? Storage::url($suggestedProduct->photos->first()->photo) : asset('default-image.jpg') }}" alt="{{ $suggestedProduct->name }}" class="w-full h-full object-center object-cover lg:w-full lg:h-full">
-                        </div>
-                        <div class="mt-4 flex justify-between">
-                            <div>
-                                <h3 class="text-sm text-gray-700">
-                                    <a href="/products/{{ $suggestedProduct->slug }}">
-                                        <span aria-hidden="true" class="absolute inset-0"></span>
-                                        {{ $suggestedProduct->name }}
-                                    </a>
-                                </h3>
-                                <p class="mt-1 text-sm text-gray-500">{{ $suggestedProduct->category->name }}</p>
-                            </div>
-                            <p class="text-sm font-medium text-gray-900">Rp {{ number_format($suggestedProduct->price, 0, ',', '.') }}</p>
-                        </div>
-                    </div>
-                @endforeach
             </div>
         </div>
-    @endif
-</div>
+
+        <!-- Product Specifications -->
+        <div class="mt-8 bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden" data-aos="fade-up"
+            data-aos-delay="100">
+            <div class="p-6">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Specifications</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">General</h3>
+                        <ul class="space-y-3">
+                            <li class="flex border-b border-gray-200 dark:border-gray-700 pb-3">
+                                <span class="text-gray-500 dark:text-gray-400 w-1/3">Brand</span>
+                                <span class="text-gray-900 dark:text-white w-2/3">{{ $store->name }}</span>
+                            </li>
+                            <li class="flex border-b border-gray-200 dark:border-gray-700 pb-3">
+                                <span class="text-gray-500 dark:text-gray-400 w-1/3">Model</span>
+                                <span class="text-gray-900 dark:text-white w-2/3">{{ $product->name }}</span>
+                            </li>
+                            <li class="flex border-b border-gray-200 dark:border-gray-700 pb-3">
+                                <span class="text-gray-500 dark:text-gray-400 w-1/3">Size</span>
+                                <span class="text-gray-900 dark:text-white w-2/3">{{ $product->size }}</span>
+                            </li>
+                            <li class="flex">
+                                <span class="text-gray-500 dark:text-gray-400 w-1/3">Weight</span>
+                                <span class="text-gray-900 dark:text-white w-2/3">{{ $product->weight }} kg</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Additional Information</h3>
+                        <ul class="space-y-3">
+                            <li class="flex border-b border-gray-200 dark:border-gray-700 pb-3">
+                                <span class="text-gray-500 dark:text-gray-400 w-1/3">Category</span>
+                                <span class="text-gray-900 dark:text-white w-2/3">{{ $category->name }}</span>
+                            </li>
+                            <li class="flex border-b border-gray-200 dark:border-gray-700 pb-3">
+                                <span class="text-gray-500 dark:text-gray-400 w-1/3">Stock</span>
+                                <span class="text-gray-900 dark:text-white w-2/3">{{ $product->stock }} units</span>
+                            </li>
+                            <li class="flex border-b border-gray-200 dark:border-gray-700 pb-3">
+                                <span class="text-gray-500 dark:text-gray-400 w-1/3">Views</span>
+                                <span class="text-gray-900 dark:text-white w-2/3">{{ $product->views }}</span>
+                            </li>
+                            <li class="flex">
+                                <span class="text-gray-500 dark:text-gray-400 w-1/3">Added On</span>
+                                <span
+                                    class="text-gray-900 dark:text-white w-2/3">{{ $product->created_at->format('M d, Y') }}</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reviews Section -->
+        <div class="mt-8 bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden" data-aos="fade-up"
+            data-aos-delay="200">
+            <div class="p-6">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Reviews</h2>
+
+                @if (isset($reviews) && $reviews->count() > 0)
+                    <ul class="space-y-4">
+                        @foreach ($reviews as $review)
+                            <li class="border-b border-gray-200 dark:border-gray-700 pb-4">
+                                <div class="flex items-center">
+                                    <span
+                                        class="font-semibold text-gray-900 dark:text-white">{{ $review->user->name }}</span>
+                                    <div class="flex ml-2">
+                                        @for ($i = 1; $i <= 5; $i++)
+                                            <i class="iconify text-{{ $i <= $review->star ? 'yellow' : 'gray' }}-400"
+                                                data-icon="lucide:star"></i>
+                                        @endfor
+                                    </div>
+                                </div>
+                                <p class="mt-2 text-gray-600 dark:text-gray-300">{{ $review->text }}</p>
+                            </li>
+                        @endforeach
+                    </ul>
+                @else
+                    <p class="text-gray-600 dark:text-gray-300">No reviews yet.</p>
+                @endif
+            </div>
+        </div>
+
+        <!-- Related Products -->
+        @if (isset($relatedProducts) && count($relatedProducts) > 0)
+            <div class="mt-12" data-aos="fade-up" data-aos-delay="200">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Related Products</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    @foreach ($relatedProducts as $relatedProduct)
+                        <div
+                            class="group bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden transform transition duration-300 hover:scale-105 hover:shadow-xl">
+                            <a href="{{ route('show', $relatedProduct->slug) }}"
+                                class="block h-full flex flex-col relative">
+                                <div class="relative aspect-w-1 aspect-h-1 overflow-hidden">
+                                    @if (count($relatedProduct->photos) > 0)
+                                        <img src="{{ asset('storage/' . $relatedProduct->photos[0]->photo) }}"
+                                            alt="{{ $relatedProduct->name }}"
+                                            class="w-full h-full object-cover transition duration-300 group-hover:scale-110">
+                                    @else
+                                        <div
+                                            class="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                                            <i class="iconify text-gray-400 text-6xl" data-icon="lucide:image"></i>
+                                        </div>
+                                    @endif
+                                    <div
+                                        class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition duration-300">
+                                    </div>
+                                </div>
+                                <div class="p-4 flex-grow flex flex-col relative z-10">
+                                    <h3
+                                        class="font-semibold text-lg mb-2 dark:text-white line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition duration-300">
+                                        {{ $relatedProduct->name }}</h3>
+                                    <div class="flex items-center mb-2">
+                                        <div class="flex">
+                                            @for ($i = 1; $i <= 5; $i++)
+                                                <i class="iconify text-{{ $i <= 4 ? 'yellow' : 'gray' }}-400"
+                                                    data-icon="lucide:star"></i>
+                                            @endfor
+                                        </div>
+                                        <span class="ml-2 text-gray-600 dark:text-gray-400 text-xs">(4.0)</span>
+                                    </div>
+                                    <p class="text-gray-600 dark:text-gray-300 mb-4 text-sm line-clamp-2 flex-grow">
+                                        {{ $relatedProduct->description }}</p>
+                                    <div class="flex justify-between items-center mt-auto">
+                                        <span
+                                            class="text-blue-600 dark:text-blue-400 font-bold">Rp{{ number_format($relatedProduct->price, 0, ',', '.') }}</span>
+                                        <form action="{{ route('cart.add') }}" method="POST">
+                                            @csrf
+                                            <input type="hidden" name="product_id" value="{{ $relatedProduct->id }}">
+                                            <input type="hidden" name="quantity" value="1">
+                                            <button type="submit"
+                                                class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transition-colors duration-200 text-sm transform group-hover:scale-105 group-hover:shadow-md">
+                                                <i class="iconify" data-icon="lucide:shopping-cart"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const mainImage = document.getElementById('mainImage');
+            const thumbnails = document.querySelectorAll('[data-src]');
+            const mobileIndicators = document.querySelectorAll('#mobileIndicators button');
+            const prevImageBtn = document.getElementById('prevImageBtn');
+            const nextImageBtn = document.getElementById('nextImageBtn');
+
+            let currentImageIndex = 0;
+            const maxImageIndex = thumbnails.length - 1;
+
+            function changeMainImage(element) {
+                const newSrc = element.dataset.src;
+                const newIndex = parseInt(element.dataset.index);
+                mainImage.classList.add('opacity-0');
+
+                setTimeout(() => {
+                    mainImage.src = newSrc;
+                    mainImage.classList.remove('opacity-0');
+                    currentImageIndex = newIndex;
+
+                    thumbnails.forEach(thumb => {
+                        thumb.classList.toggle('border-blue-500', parseInt(thumb.dataset.index) ===
+                            currentImageIndex);
+                        thumb.classList.toggle('border-transparent', parseInt(thumb.dataset
+                            .index) !== currentImageIndex);
+                    });
+
+                    mobileIndicators.forEach(indicator => {
+                        indicator.classList.toggle('bg-blue-600', parseInt(indicator.dataset
+                            .index) === currentImageIndex);
+                        indicator.classList.toggle('bg-gray-300', parseInt(indicator.dataset
+                            .index) !== currentImageIndex);
+                    });
+                }, 300);
+            }
+
+            prevImageBtn.addEventListener('click', function() {
+                if (currentImageIndex > 0) {
+                    currentImageIndex--;
+                    changeMainImage(thumbnails[currentImageIndex]);
+                }
+            });
+
+            nextImageBtn.addEventListener('click', function() {
+                if (currentImageIndex < maxImageIndex) {
+                    currentImageIndex++;
+                    changeMainImage(thumbnails[currentImageIndex]);
+                }
+            });
+
+            // Display SweetAlert notifications for flash messages
+            @if (session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: "{{ session('success') }}",
+                    timer: 3000,
+                    timerProgressBar: true,
+                    toast: true,
+                    position: 'bottom-end',
+                    showConfirmButton: false
+                });
+            @endif
+
+            @if (session('error'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: "{{ session('error') }}",
+                    timer: 3000,
+                    timerProgressBar: true,
+                    toast: true,
+                    position: 'bottom-end',
+                    showConfirmButton: false
+                });
+            @endif
+        });
+
+        // Make the changeMainImage function global so it can be called from HTML
+        window.changeMainImage = function(element) {
+            const newSrc = element.dataset.src;
+            const newIndex = parseInt(element.dataset.index);
+            const mainImage = document.getElementById('mainImage');
+            mainImage.classList.add('opacity-0');
+
+            setTimeout(() => {
+                mainImage.src = newSrc;
+                mainImage.classList.remove('opacity-0');
+                currentImageIndex = newIndex;
+
+                const thumbnails = document.querySelectorAll('[data-src]');
+                thumbnails.forEach(thumb => {
+                    thumb.classList.toggle('border-blue-500', parseInt(thumb.dataset.index) ===
+                        newIndex);
+                    thumb.classList.toggle('border-transparent', parseInt(thumb.dataset.index) !==
+                        newIndex);
+                });
+
+                const mobileIndicators = document.querySelectorAll('#mobileIndicators button');
+                mobileIndicators.forEach(indicator => {
+                    indicator.classList.toggle('bg-blue-600', parseInt(indicator.dataset.index) ===
+                        newIndex);
+                    indicator.classList.toggle('bg-gray-300', parseInt(indicator.dataset.index) !==
+                        newIndex);
+                });
+            }, 300);
+        };
+    </script>
 @endsection

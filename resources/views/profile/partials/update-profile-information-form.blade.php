@@ -22,13 +22,19 @@
                     <div class="text-center">
                         <!-- Container untuk preview gambar atau singkatan nama -->
                         <div id="image-preview-container" class="w-32 h-32 rounded-full object-cover mx-auto mb-4 border-4 border-indigo-500 dark:border-indigo-400 flex items-center justify-center bg-gray-200 dark:bg-gray-700">
-                            @if ($user->image)
+                            @if (auth()->user()->image)
                                 <!-- Jika ada gambar, tampilkan gambar -->
-                                <img id="image-preview" src="{{ asset('storage/images/' . $user->image) }}" class="w-full h-full rounded-full object-cover">
+                                <img src="{{ asset('storage/images/' . auth()->user()->image) }}" class="w-full h-full rounded-full object-cover">
                             @else
                                 <!-- Jika tidak ada gambar, tampilkan singkatan nama -->
-                                <span id="initials" class="text-4xl font-bold text-gray-800 dark:text-gray-200">
-                                    {{ generateInitials($user->username) }}
+                                @php
+                                    $username = auth()->user()->username ?? 'User ';
+                                    $initials = collect(explode(' ', $username))->map(function ($word) {
+                                        return strtoupper(substr($word, 0, 1));
+                                    })->take(2)->join('');
+                                @endphp
+                                <span class="text-4xl font-bold text-gray-800 dark:text-gray-200">
+                                    {{ $initials }}
                                 </span>
                             @endif
                         </div>
@@ -37,28 +43,28 @@
                         <label for="image" class="cursor-pointer bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-full transition duration-300 ease-in-out">
                             {{ __('Change Photo') }}
                         </label>
-                        <input id="image" name="image" type="file" class="hidden" onchange="previewImage(event)">
+                        <input id="image" name="image" type="file" class="hidden" onchange="this.form.submit()">
                     </div>
                     <x-input-error class="mt-2 text-center" :messages="$errors->get('image')" />
                 </div>
                 <div class="md:w-2/3 md:pl-8">
                     <div class="mb-6">
                         <x-input-label for="name" :value="__('Name')" class="text-sm font-medium text-gray-700 dark:text-gray-300" />
-                        <x-text-input id="name" name="name" type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white" :value="old('name', $user->name)" required autofocus autocomplete="name" />
+                        <x-text-input id="name" name="name" type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white" :value="old('name', auth()->user()->name)" required autofocus autocomplete="name" />
                         <x-input-error class="mt-2" :messages="$errors->get('name')" />
                     </div>
 
                     <div class="mb-6">
                         <x-input-label for="email" :value="__('Email')" class="text-sm font-medium text-gray-700 dark:text-gray-300" />
-                        <x-text-input id="email" name="email" type="email" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white" :value="old('email', $user->email)" required autocomplete="username" />
+                        <x-text-input id="email" name="email" type="email" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white" :value="old('email', auth()->user()->email)" required autocomplete="username" />
                         <x-input-error class="mt-2" :messages="$errors->get('email')" />
 
-                        @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
+                        @if (auth()->user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! auth()->user()->hasVerifiedEmail())
                             <div class="mt-2">
                                 <p class="text-sm text-gray-800 dark:text-gray-200">
                                     {{ __('Your email address is unverified.') }}
 
-                                    <button form="send-verification" class="underline text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
+                                    <button form=" send-verification" class="underline text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
                                         {{ __('Click here to re-send the verification email.') }}
                                     </button>
                                 </p>

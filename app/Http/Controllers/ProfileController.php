@@ -39,21 +39,24 @@ class ProfileController extends Controller
 
         // Handle upload gambar
         if ($request->hasFile('image')) {
-            // Hapus gambar lama jika ada
-            if ($user->image && Storage::exists('public/images/' . $user->image)) {
-                Storage::delete('public/images/' . $user->image);
+            // Hapus gambar lama
+            if ($user->image) {
+                Storage::disk('public')->delete('images/' . $user->image);
             }
-
-            // Simpan gambar baru
+            
+            // Upload gambar baru
             $imageName = time() . '.' . $request->image->extension();
-            $request->image->storeAs('public/images', $imageName);
+            $request->image->storeAs('images', $imageName, 'public');
             $user->image = $imageName;
         }
 
         // Simpan perubahan
         $user->save();
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        // Redirect berbeda berdasarkan role
+        return $user->role === 'seller' ?
+             Redirect::route('profile.edit')->with('status', 'profile-updated')
+            : Redirect::route('account.index')->with('success', 'Profil berhasil diperbarui!');
     }
 
     /**

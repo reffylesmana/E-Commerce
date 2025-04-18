@@ -34,13 +34,22 @@ class UserResource extends Resource
                     ->email()
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('password')
-                    ->password()
-                    ->required()
-                    ->maxLength(255),
+                Forms\Components\FileUpload::make('image')
+                    ->label('Gambar Profil')
+                    ->disk('public') // Pastikan Anda memiliki disk yang sesuai di filesystem
+                    ->directory('images') // Folder untuk menyimpan gambar
+                    ->required(),
+                Forms\Components\Select::make('role') // Menambahkan input untuk peran
+                    ->label('Peran')
+                    ->options([
+                        'admin' => 'Admin',
+                        'editor' => 'Editor',
+                        'user' => 'User ',
+                    ])
+                    ->required(),
             ]);
     }
-
+    
     public static function table(Table $table): Table
     {
         return $table
@@ -48,6 +57,12 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email')
+                    ->searchable(),
+                Tables\Columns\ImageColumn::make('image') // Menambahkan kolom untuk gambar
+                    ->label('Gambar Profil')
+                    ->disk('public'), // Pastikan Anda memiliki disk yang sesuai di filesystem
+                Tables\Columns\TextColumn::make('role') 
+                    ->label('Peran')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()

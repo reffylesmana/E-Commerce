@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -78,4 +79,20 @@ class User extends Authenticatable
     {
         return $this->hasOne(Store::class);
     }
+
+    public function wishlists()
+    {
+        return $this->hasMany(Wishlist::class);
+    }
+
+    public function orders()
+{
+    return $this->hasMany(Order::class);
+}
+
+
+public function payment()
+{
+    return $this->hasOne(Payment::class);
+}
 }

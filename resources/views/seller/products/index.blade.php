@@ -1,7 +1,7 @@
 @extends('layouts.seller')
 @section('title', 'Kelola Produk')
-@section('content')
 
+@section('content')
 <style>
     /* Modern dashboard styling */
     .page-container {
@@ -245,16 +245,27 @@
     }
     
     .product-image {
-        width: 2.5rem;
-        height: 2.5rem;
-        border-radius: 0.375rem;
+        width: 4rem;
+        height: 4rem;
+        border-radius: 0.5rem;
         object-fit: cover;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s ease;
+    }
+    
+    .product-image:hover {
+        transform: scale(1.05);
+    }
+    
+    .product-image-single {
+        width: 5rem;
+        height: 5rem;
     }
     
     .product-placeholder {
-        width: 2.5rem;
-        height: 2.5rem;
-        border-radius: 0.375rem;
+        width: 4rem;
+        height: 4rem;
+        border-radius: 0.5rem;
         background-color: #f3f4f6;
         display: flex;
         align-items: center;
@@ -263,18 +274,9 @@
     }
     
     .product-name {
-        font-weight: 500;
+        font-weight: 600;
         color: #111827;
-        margin-bottom: 0.25rem;
-        max-width: 15rem;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-    
-    .product-description {
-        font-size: 0.875rem;
-        color: #6b7280;
+        font-size: 0.95rem;
         max-width: 15rem;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -428,8 +430,37 @@
         animation: fadeIn 0.3s ease-out 0.2s forwards;
         opacity: 0;
     }
+    
+    /* Image tooltip */
+    .image-tooltip {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .image-tooltip:hover .tooltip-image {
+        display: block;
+    }
+    
+    .tooltip-image {
+        display: none;
+        position: absolute;
+        top: -5px;
+        left: 50%;
+        transform: translate(-50%, -100%);
+        padding: 5px;
+        background-color: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        z-index: 10;
+    }
+    
+    .tooltip-image img {
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 0.375rem;
+    }
 </style>
-
 <div class="page-container py-8 px-4">
     <div class="container mx-auto max-w-7xl">
         <!-- Page Header -->
@@ -494,34 +525,41 @@
                 <table class="products-table" id="productsTable">
                     <thead>
                         <tr>
-                            <th>Produk</th>
-                            <th>Kategori</th>
-                            <th>Harga</th>
-                            <th>Stok</th>
-                            <th>Status</th>
-                            <th>Terjual</th>
-                            <th class="text-right">Aksi</th>
+                            <th width="15%">Foto</th>
+                            <th width="20%">Nama Produk</th>
+                            <th width="15%">Kategori</th>
+                            <th width="12%">Harga</th>
+                            <th width="8%">Stok</th>
+                            <th width="10%">Status</th>
+                            <th width="8%">Terjual</th>
+                            <th width="12%" class="text-right">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($products as $product)
                         <tr>
                             <td>
-                                <div class="flex items-center">
-                                    <div class="flex-shrink-0">
-                                        @if($product->images->isNotEmpty())
-                                            <img class="product-image" src="{{ Storage::url($product->images->first()->path) }}" alt="{{ $product->name }}">
-                                        @else
-                                            <div class="product-placeholder">
-                                                <i class="iconify" data-icon="tabler:photo"></i>
-                                            </div>
-                                        @endif
+                                @if($product->photos->isNotEmpty())
+                                    @if($product->photos->count() == 1)
+                                        <img class="product-image product-image-single" src="{{ Storage::url($product->photos->first()->photo) }}" alt="{{ $product->name }}">
+                                    @else
+                                        <div class="image-tooltip">
+                                            <img class="product-image" src="{{ Storage::url($product->photos->first()->photo) }}" alt="{{ $product->name }}">
+                                            @if($product->photos->count() > 1)
+                                                <div class="tooltip-image">
+                                                    <img src="{{ Storage::url($product->photos->first()->photo) }}" alt="{{ $product->name }}">
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @endif
+                                @else
+                                    <div class="product-placeholder">
+                                        <i class="iconify text-xl" data-icon="tabler:photo"></i>
                                     </div>
-                                    <div class="ml-3">
-                                        <div class="product-name">{{ $product->name }}</div>
-                                        <div class="product-description">{{ Str::limit($product->description, 50) }}</div>
-                                    </div>
-                                </div>
+                                @endif
+                            </td>
+                            <td>
+                                <div class="product-name">{{ $product->name }}</div>
                             </td>
                             <td>{{ $product->category->name }}</td>
                             <td>Rp {{ number_format($product->price, 0, ',', '.') }}</td>
@@ -535,7 +573,7 @@
                                     {{ $product->is_active ? 'Aktif' : 'Nonaktif' }}
                                 </span>
                             </td>
-                            <td>{{ $product->sold }}</td>
+                            <td>{{ $product->sold ?? 0 }}</td>
                             <td class="text-right">
                                 <div class="flex justify-end space-x-1">
                                     <a href="{{ route('seller.products.edit', $product->id) }}" class="action-button action-button-edit">
@@ -549,7 +587,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="7">
+                            <td colspan="8">
                                 <div class="empty-state">
                                     <div class="empty-icon">
                                         <i class="iconify text-3xl" data-icon="tabler:box-off"></i>
@@ -574,6 +612,9 @@
         </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Search functionality
@@ -632,10 +673,9 @@
             }
             
             const productName = row.querySelector('.product-name')?.textContent.toLowerCase() || '';
-            const category = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase() || '';
-            const description = row.querySelector('.product-description')?.textContent.toLowerCase() || '';
+            const category = row.querySelector('td:nth-child(3)')?.textContent.toLowerCase() || '';
             
-            if (productName.includes(searchTerm) || category.includes(searchTerm) || description.includes(searchTerm)) {
+            if (productName.includes(searchTerm) || category.includes(searchTerm)) {
                 row.style.display = '';
             } else {
                 row.style.display = 'none';
@@ -651,7 +691,7 @@
             const emptyRow = document.createElement('tr');
             emptyRow.id = 'emptySearchRow';
             emptyRow.innerHTML = `
-                <td colspan="7">
+                <td colspan="8">
                     <div class="empty-state">
                         <div class="empty-icon">
                             <i class="iconify text-3xl" data-icon="tabler:search-off"></i>
@@ -668,40 +708,27 @@
     }
     
     function deleteProduct(productId) {
-        // Create a form dynamically
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `/seller/products/${productId}`;
-        form.style.display = 'none';
-        
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-        const csrfInput = document.createElement('input');
-        csrfInput.type = 'hidden';
-        csrfInput.name = '_token';
-        csrfInput.value = csrfToken;
-        
-        const methodInput = document.createElement('input');
-        methodInput.type = 'hidden';
-        methodInput.name = '_method';
-        methodInput.value = 'DELETE';
-        
-        form.appendChild(csrfInput);
-        form.appendChild(methodInput);
-        document.body.appendChild(form);
-        
-        // Show loading state
-        Swal.fire({
-            title: 'Menghapus Produk',
-            html: 'Mohon tunggu sebentar...',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-        
-        // Submit the form
-        form.submit();
-    }
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/seller/products/${productId}`;
+    form.style.display = 'none';
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = '_token';
+    csrfInput.value = csrfToken;
+
+    const methodInput = document.createElement('input');
+    methodInput.type = 'hidden';
+    methodInput.name = '_method';
+    methodInput.value = 'DELETE';
+
+    form.appendChild(csrfInput);
+    form.appendChild(methodInput);
+    document.body.appendChild(form);
+    form.submit();
+}
     
     // Utility functions
     function debounce(func, wait) {
@@ -716,5 +743,25 @@
         };
     }
 </script>
+@if(session('success') && session('show_options'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                title: 'Berhasil!',
+                text: '{{ session('success') }}',
+                icon: 'success',
+                showCancelButton: true,
+                confirmButtonColor: '#4F46E5',
+                cancelButtonColor: '#6B7280',
+                confirmButtonText: 'Tambah Produk Lain',
+                cancelButtonText: 'Kembali ke Daftar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '{{ route('seller.products.create') }}';
+                }
+            });
+        });
+    </script>
+@endif
 @endsection
 

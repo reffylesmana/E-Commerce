@@ -1,7 +1,7 @@
 @extends('layouts.seller')
 @section('title', 'Tambah Produk Baru')
-@section('content')
 
+@section('content')
     <style>
         /* Modern form styling */
         .page-container {
@@ -178,9 +178,59 @@
             margin-right: 0.5rem;
         }
 
-        /* Image upload styling */
-        .upload-container {
-            margin-top: 1rem;
+        /* Enhanced Image upload styling */
+        .upload-zone {
+            position: relative;
+            border: 2px dashed #e5e7eb;
+            border-radius: 1rem;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            background-color: #f9fafb;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .upload-zone:hover {
+            border-color: #4f46e5;
+            background-color: rgba(79, 70, 229, 0.05);
+        }
+
+        .upload-zone.drag-over {
+            border-color: #4f46e5;
+            background-color: rgba(79, 70, 229, 0.1);
+            transform: scale(1.01);
+        }
+
+        .upload-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 4rem;
+            height: 4rem;
+            border-radius: 9999px;
+            background-color: rgba(79, 70, 229, 0.1);
+            color: #4f46e5;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .upload-zone:hover .upload-icon {
+            transform: scale(1.1);
+            background-color: rgba(79, 70, 229, 0.2);
+        }
+
+        .upload-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-subtitle {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 1rem;
         }
 
         .upload-button {
@@ -188,44 +238,45 @@
             align-items: center;
             justify-content: center;
             padding: 0.75rem 1.5rem;
-            background-color: #f3f4f6;
-            color: #4b5563;
+            background-color: #4f46e5;
+            color: white;
             border-radius: 0.5rem;
             font-weight: 500;
-            cursor: pointer;
             transition: all 0.2s ease;
-            border: 1px solid #e5e7eb;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2), 0 2px 4px -1px rgba(79, 70, 229, 0.1);
         }
 
         .upload-button:hover {
-            background-color: #e5e7eb;
-            color: #111827;
+            background-color: #4338ca;
+            transform: translateY(-1px);
         }
 
-        .upload-button i {
-            margin-right: 0.5rem;
+        .upload-formats {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 1rem;
         }
 
-        /* Image preview */
+        /* Image preview grid */
         .image-preview {
-            display: flex;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(6rem, 1fr));
             gap: 1rem;
             margin-top: 1.5rem;
         }
 
         .preview-item {
             position: relative;
-            width: 6rem;
-            height: 6rem;
-            border-radius: 0.5rem;
+            aspect-ratio: 1/1;
+            border-radius: 0.75rem;
             overflow: hidden;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            transition: transform 0.2s ease;
+            transition: all 0.3s ease;
         }
 
         .preview-item:hover {
             transform: scale(1.05);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
 
         .preview-item img {
@@ -234,27 +285,72 @@
             object-fit: cover;
         }
 
+        .preview-item::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.3), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .preview-item:hover::before {
+            opacity: 1;
+        }
+
         .remove-btn {
             position: absolute;
-            top: 0.25rem;
-            right: 0.25rem;
-            width: 1.5rem;
-            height: 1.5rem;
-            background-color: rgba(239, 68, 68, 0.9);
+            bottom: 0.5rem;
+            right: 0.5rem;
+            width: 2rem;
+            height: 2rem;
+            background-color: #ef4444;
             color: white;
             border-radius: 9999px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            font-size: 1rem;
-            line-height: 1;
-            transition: all 0.2s ease;
+            font-size: 1.25rem;
+            opacity: 0;
+            transform: translateY(0.5rem);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .preview-item:hover .remove-btn {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         .remove-btn:hover {
-            background-color: #ef4444;
+            background-color: #dc2626;
             transform: scale(1.1);
+        }
+
+        /* Upload progress */
+        .upload-progress-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 0.25rem;
+            background-color: rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .upload-progress-bar {
+            height: 100%;
+            background-color: #4f46e5;
+            width: 0;
+            transition: width 0.3s ease;
+        }
+
+        /* Empty state */
+        .empty-state {
+            padding: 2rem;
+            text-align: center;
+            color: #6b7280;
         }
 
         /* Animations */
@@ -274,6 +370,21 @@
             animation: fadeIn 0.3s ease-out forwards;
         }
 
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
 
         /* Form progress indicator */
         .form-progress {
@@ -291,7 +402,6 @@
             right: 0;
             height: 2px;
             background-color: #e5e7eb;
-            /* Garis abu-abu dasar */
             transform: translateY(-50%);
             z-index: 0;
         }
@@ -309,11 +419,9 @@
             z-index: 0;
         }
 
-
         .progress-step {
             position: relative;
             z-index: 1;
-            /* Pastikan circle di atas garis */
             background-color: white;
             width: 2.5rem;
             height: 2.5rem;
@@ -374,6 +482,10 @@
             .progress-label {
                 font-size: 0.7rem;
             }
+
+            .image-preview {
+                grid-template-columns: repeat(auto-fill, minmax(5rem, 1fr));
+            }
         }
 
         /* Input focus animation */
@@ -397,6 +509,8 @@
             left: 0;
         }
     </style>
+
+
 
     <div class="page-container py-8 px-4">
         <div class="container mx-auto max-w-5xl">
@@ -510,24 +624,24 @@
                                 </div>
 
                                 <div class="form-group input-focus-effect">
-                                    <label for="weight" class="form-label">Berat (gram) <span
+                                    <label for="weight" class="form-label">Berat (kg) <span
                                             class="text-red-500">*</span></label>
-                                    <input type="number" id="weight" name="weight" min="100"
-                                        class="form-input" placeholder="Contoh: 500" value="{{ old('weight') }}"
-                                        required>
+                                    <input type="text" id="weight" name="weight" class="form-input"
+                                        placeholder="Contoh: 1, 2, 2.5" value="{{ old('weight') }}" required>
                                     @error('weight')
                                         <p class="form-error">{{ $message }}</p>
                                     @enderror
-                                    <p class="form-hint">Minimal 100 gram</p>
+                                    <p class="form-hint">Masukkan berat dalam kilogram (kg). Contoh: 1, 2, 2.5</p>
                                 </div>
 
                                 <div class="form-group input-focus-effect">
                                     <label for="size" class="form-label">Ukuran</label>
                                     <input type="text" id="size" name="size" class="form-input"
-                                        placeholder="Contoh: 10x15x5 cm" value="{{ old('size') }}">
+                                        placeholder="Contoh: 10x15x5 cm, 14 inch, XL" value="{{ old('size') }}">
                                     @error('size')
                                         <p class="form-error">{{ $message }}</p>
                                     @enderror
+                                    <p class="form-hint">Format bebas: dimensi, inch, ukuran pakaian, dll</p>
                                 </div>
                             </div>
 
@@ -566,26 +680,31 @@
                                 <label class="form-label">Unggah Foto Produk <span class="text-red-500">*</span></label>
                                 <p class="form-hint mb-3">Foto yang bagus dapat meningkatkan daya tarik produk Anda</p>
 
-                                <div class="upload-container">
-                                    <label for="productImages" class="upload-button">
-                                        <i class="iconify" data-icon="tabler:upload"></i>
-                                        Pilih Foto Produk
-                                    </label>
-                                    <input type="file" id="productImages" name="product-images[]" multiple
+                                <div id="upload-zone" class="upload-zone">
+                                    <div class="upload-icon">
+                                        <i class="iconify text-3xl" data-icon="tabler:cloud-upload"></i>
+                                    </div>
+                                    <h3 class="upload-title">Tambahkan Foto Produk</h3>
+                                    <p class="upload-subtitle">Seret dan lepaskan foto di sini, atau klik untuk memilih</p>
+                                    <button type="button" class="upload-button" id="browse-button">
+                                        <i class="iconify mr-2" data-icon="tabler:photo-plus"></i>
+                                        Pilih Foto
+                                    </button>
+                                    <p class="upload-formats">Format: JPG, PNG, GIF (Maks. 5MB)</p>
+                                    <input type="file" id="productImages" name="photos[]" multiple
                                         accept="image/*" class="hidden">
-                                    <p class="form-hint mt-2">Format: JPG, PNG, GIF (Maks. 5MB)</p>
                                 </div>
 
-                                <div id="imagePreview" class="image-preview"></div>
+                                <div id="imagePreview" class="image-preview mt-6"></div>
                                 <div id="imageInputs" class="hidden"></div>
 
                                 @error('images')
                                     <p class="form-error mt-2">{{ $message }}</p>
                                 @enderror
-
                             </div>
+
                             <div class="mt-8 flex flex-wrap gap-3">
-                                <button type="button" class="btn btn-secondary" onclick="goToStep(2)">
+                                <button type="button" class="btn btn-secondary" data-goto-step="2">
                                     <i class="iconify mr-1" data-icon="tabler:arrow-left"></i>
                                     Kembali
                                 </button>
@@ -601,10 +720,14 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Variables
             const fileInput = document.getElementById('productImages');
+            const uploadZone = document.getElementById('upload-zone');
+            const browseButton = document.getElementById('browse-button');
             const imagePreview = document.getElementById('imagePreview');
             const imageInputs = document.getElementById('imageInputs');
             const form = document.getElementById('productForm');
@@ -635,8 +758,8 @@
                     },
                     {
                         field: 'weight',
-                        test: val => val >= 100,
-                        error: 'Berat produk minimal 100 gram'
+                        test: val => val.trim() !== '',
+                        error: 'Berat produk wajib diisi'
                     },
                     {
                         field: 'description',
@@ -664,6 +787,39 @@
                 // File input
                 if (fileInput) {
                     fileInput.addEventListener('change', handleFileSelect);
+                }
+
+                // Browse button
+                if (browseButton) {
+                    browseButton.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation(); // Prevent event bubbling
+                        fileInput.click();
+                    });
+                }
+
+                // Upload zone
+                if (uploadZone) {
+                    // Drag and drop events
+                    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                        uploadZone.addEventListener(eventName, preventDefaults, false);
+                    });
+
+                    ['dragenter', 'dragover'].forEach(eventName => {
+                        uploadZone.addEventListener(eventName, highlight, false);
+                    });
+
+                    ['dragleave', 'drop'].forEach(eventName => {
+                        uploadZone.addEventListener(eventName, unhighlight, false);
+                    });
+
+                    uploadZone.addEventListener('drop', handleDrop, false);
+                    uploadZone.addEventListener('click', function(e) {
+                        // Only trigger file input if not clicking on the browse button
+                        if (e.target !== browseButton && !browseButton.contains(e.target)) {
+                            fileInput.click();
+                        }
+                    });
                 }
 
                 // Form submission
@@ -702,11 +858,12 @@
                 for (const validation of validations) {
                     const field = validation.field;
                     const value = field ? document.getElementById(field).value : null;
-                    const testResult = validation.test(field ? value : null);
+                    const testResult = field ? validation.test(value) : validation.test();
 
                     if (!testResult) {
                         showFieldError(validation.error, field);
                         isValid = false;
+                        break;
                     }
                 }
 
@@ -725,66 +882,104 @@
                     step.classList.remove('active', 'completed');
                 });
 
-                for (let i = 1; i <= targetStep; i++) {
+                for (let i = 1; i <= 3; i++) {
                     const stepElement = document.getElementById(`step${i}`);
-                    i === targetStep ?
-                        stepElement.classList.add('active') :
+                    if (i < targetStep) {
                         stepElement.classList.add('completed');
+                    } else if (i === targetStep) {
+                        stepElement.classList.add('active');
+                    }
                 }
+
+                // Update progress bar
+                const progressPercentage = ((targetStep - 1) / 2) * 100;
+                document.documentElement.style.setProperty('--progress', `${progressPercentage}%`);
 
                 // Scroll to top
                 document.querySelector('.form-card').scrollIntoView({
                     behavior: 'smooth',
                     block: 'start'
                 });
-
-                updateProgressSteps();
             }
 
             // File Handling
-            function handleFileSelect() {
+            function handleFileSelect(e) {
                 if (fileInput.files.length) {
                     processFiles(fileInput.files);
+                }
+            }
+
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+
+                if (files.length) {
+                    fileInput.files = files;
+                    processFiles(files);
                 }
             }
 
             function processFiles(files) {
                 if (!validateFiles(files)) return;
 
+                // Show loading state
+                uploadZone.classList.add('animate-pulse');
+
+                // Process each file
                 Array.from(files).forEach(file => {
                     const reader = new FileReader();
                     reader.onload = (e) => createImagePreview(e, file);
                     reader.readAsDataURL(file);
                 });
 
+                // Update progress step
                 document.getElementById('step3').classList.add('completed');
+                uploadZone.classList.remove('animate-pulse');
             }
 
             function createImagePreview(e, file) {
                 const previewItem = document.createElement('div');
                 previewItem.className = 'preview-item animate-fade-in';
-                previewItem.innerHTML = `
-                  <img src="${e.target.result}">
-                  <div class="remove-btn">×</div>
-              `;
 
+                // Create image element
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.alt = file.name;
+
+                // Create remove button
+                const removeBtn = document.createElement('div');
+                removeBtn.className = 'remove-btn';
+                removeBtn.innerHTML = '<i class="iconify" data-icon="tabler:trash"></i>';
+
+                // Create progress bar
+                const progressContainer = document.createElement('div');
+                progressContainer.className = 'upload-progress-container';
+
+                const progressBar = document.createElement('div');
+                progressBar.className = 'upload-progress-bar';
+                progressContainer.appendChild(progressBar);
+
+                // Append elements
+                previewItem.appendChild(img);
+                previewItem.appendChild(removeBtn);
+                previewItem.appendChild(progressContainer);
                 imagePreview.appendChild(previewItem);
-                setupRemoveButton(previewItem);
-                uploadTempImage(file, previewItem);
-            }
 
-            function setupRemoveButton(previewItem) {
-                previewItem.querySelector('.remove-btn').addEventListener('click', () => {
+                // Setup remove button
+                removeBtn.addEventListener('click', () => {
                     const index = Array.from(imagePreview.children).indexOf(previewItem);
                     if (index !== -1 && index < tempImages.length) {
                         removeTempImage(tempImages[index], previewItem);
                     }
                 });
+
+                // Upload to server
+                uploadTempImage(file, previewItem, progressBar);
             }
 
             // Validation Helpers
             function validateFiles(files) {
-                const maxSize = 5 * 1024 * 1024;
+                const maxSize = 5 * 1024 * 1024; // 5MB
                 const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
 
                 for (const file of files) {
@@ -792,11 +987,13 @@
                         showError('Format File Tidak Valid', 'Hanya file JPG, PNG, atau GIF yang diperbolehkan');
                         return false;
                     }
+
                     if (file.size > maxSize) {
                         showError('Ukuran File Terlalu Besar', 'Ukuran file tidak boleh lebih dari 5MB');
                         return false;
                     }
                 }
+
                 return true;
             }
 
@@ -829,10 +1026,49 @@
             function handleFormSubmit(e) {
                 e.preventDefault();
 
-                if (!validateStep(1) || !validateStep(2) || !validateStep(3)) {
-                    showError('Validasi Gagal', 'Harap lengkapi semua data yang diperlukan');
+                // Basic validation
+                const name = document.getElementById('name').value.trim();
+                const category = document.getElementById('category_id').value;
+                const price = document.getElementById('price').value;
+                const stock = document.getElementById('stock').value;
+                const weight = document.getElementById('weight').value;
+                const description = document.getElementById('description').value.trim();
+
+                // Collect validation errors
+                const errors = [];
+
+                if (!name) errors.push('Nama produk wajib diisi');
+                if (!category) errors.push('Kategori produk wajib dipilih');
+                if (!price || price < 1000) errors.push('Harga produk minimal Rp 1.000');
+                if (!stock || stock < 0) errors.push('Stok produk tidak boleh kosong');
+                if (!weight || weight < 0) errors.push('Berat produk wajib diisi');
+                if (!description || description.length < 20) errors.push('Deskripsi produk minimal 20 karakter');
+
+                // Check if at least one image exists
+                if (tempImages.length === 0) {
+                    errors.push('Silakan upload minimal satu foto produk');
+                }
+
+                if (errors.length > 0) {
+                    Swal.fire({
+                        title: 'Validasi Gagal',
+                        html: errors.join('<br>'),
+                        icon: 'error',
+                        confirmButtonColor: '#4F46E5'
+                    });
                     return;
                 }
+
+                // Show detailed debug info before submitting
+                console.log('Submitting form with data:', {
+                    name,
+                    category,
+                    price,
+                    stock,
+                    weight,
+                    description,
+                    images: tempImages.map(img => img.path)
+                });
 
                 Swal.fire({
                     title: 'Menyimpan Produk',
@@ -840,70 +1076,120 @@
                     allowOutsideClick: false,
                     didOpen: () => Swal.showLoading()
                 });
-
+                
                 this.submit();
             }
 
             // Image Management
-            async function uploadTempImage(file, previewElement) {
+            async function uploadTempImage(file, previewElement, progressBar) {
                 const formData = new FormData();
                 formData.append('file', file);
                 formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
 
                 try {
+                    // Simulate progress
+                    let progress = 0;
+                    const interval = setInterval(() => {
+                        progress += 5;
+                        if (progress <= 90) {
+                            progressBar.style.width = `${progress}%`;
+                        }
+                    }, 100);
+
                     const response = await fetch('/seller/products/upload-temp-image', {
                         method: 'POST',
                         body: formData
                     });
+
+                    clearInterval(interval);
+                    progressBar.style.width = '100%';
+
+                    setTimeout(() => {
+                        previewElement.querySelector('.upload-progress-container').style.opacity = '0';
+                    }, 500);
+
                     const data = await response.json();
 
                     if (data.path) {
-                        tempImages.push({
+                        // Store temp image info
+                        const tempImage = {
                             id: data.id,
                             path: data.path,
                             element: previewElement
-                        });
+                        };
+                        tempImages.push(tempImage);
 
+                        // Add hidden input
                         const input = document.createElement('input');
                         input.type = 'hidden';
                         input.name = 'images[]';
                         input.value = data.path;
                         input.id = `image-input-${data.id}`;
                         imageInputs.appendChild(input);
+                    } else if (data.error) {
+                        showError('Error', data.error);
+                        previewElement.remove();
                     }
                 } catch (error) {
                     console.error('Error uploading image:', error);
                     previewElement.remove();
-                    showError('Error', 'Gagal mengupload gambar');
+                    showError('Error', 'Gagal mengupload gambar: ' + error.message);
                 }
             }
 
             async function removeTempImage(tempImage, element) {
-                element.remove();
-                document.getElementById(`image-input-${tempImage.id}`)?.remove();
-                tempImages = tempImages.filter(img => img.id !== tempImage.id);
+                // Add removal animation
+                element.style.transform = 'scale(0.8)';
+                element.style.opacity = '0';
 
-                try {
-                    await fetch('/seller/products/remove-temp-image', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                        },
-                        body: JSON.stringify({
-                            path: tempImage.path
-                        })
-                    });
+                setTimeout(async () => {
+                    // Remove from DOM
+                    element.remove();
 
-                    if (tempImages.length === 0) {
-                        document.getElementById('step3').classList.remove('completed');
+                    // Remove hidden input
+                    document.getElementById(`image-input-${tempImage.id}`)?.remove();
+
+                    // Remove from temp images array
+                    tempImages = tempImages.filter(img => img.id !== tempImage.id);
+
+                    try {
+                        await fetch('/seller/products/remove-temp-image', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector(
+                                    'meta[name="csrf-token"]').content
+                            },
+                            body: JSON.stringify({
+                                path: tempImage.path
+                            })
+                        });
+
+                        if (tempImages.length === 0) {
+                            document.getElementById('step3').classList.remove('completed');
+                        }
+
+                        updateProgressSteps();
+                    } catch (error) {
+                        console.error('Error removing image:', error);
                     }
-                } catch (error) {
-                    console.error('Error removing image:', error);
-                }
+                }, 300);
             }
 
             // UI Helpers
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            function highlight() {
+                uploadZone.classList.add('drag-over');
+            }
+
+            function unhighlight() {
+                uploadZone.classList.remove('drag-over');
+            }
+
             function showError(title, message) {
                 Swal.fire({
                     title,
@@ -931,35 +1217,24 @@
                 document.getElementById('step3').classList.toggle('completed', step3Valid);
 
                 // Update progress line
-                const activeStep = document.querySelector('.progress-step.active');
-                const totalSteps = document.querySelectorAll('.progress-step').length;
-                const stepNumber = parseInt(activeStep.id.replace('step', ''), 10);
-
-                const targetProgress = ((stepNumber - 1) / (totalSteps - 1)) * 100;
-                const currentProgress = parseFloat(getComputedStyle(document.documentElement).getPropertyValue(
-                    '--progress')) || 0;
-
-                function animateProgress(start, end, duration) {
-                    let startTime = null;
-
-                    function step(timestamp) {
-                        if (!startTime) startTime = timestamp;
-                        let progress = Math.min((timestamp - startTime) / duration, 1);
-                        let easedProgress = start + (end - start) * progress;
-
-                        document.documentElement.style.setProperty('--progress', `${easedProgress}%`);
-
-                        if (progress < 1) {
-                            requestAnimationFrame(step);
-                        }
-                    }
-
-                    requestAnimationFrame(step);
-                }
-
-                animateProgress(currentProgress, targetProgress, 200); // Animasi dalam 500ms
-
+                const currentStep = getCurrentStep();
+                const progressPercentage = ((currentStep - 1) / 2) * 100;
+                document.documentElement.style.setProperty('--progress', `${progressPercentage}%`);
             }
         });
+
+        @if ($errors->any())
+            const errorMessages = [];
+            @foreach ($errors->all() as $error)
+                errorMessages.push("{{ $error }}");
+            @endforeach
+
+            Swal.fire({
+                title: 'Validasi Gagal',
+                html: errorMessages.join('<br>'),
+                icon: 'error',
+                confirmButtonColor: '#4F46E5'
+            });
+        @endif
     </script>
 @endsection

@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Broadcasting
@@ -15,7 +14,6 @@ return [
     */
 
     'broadcasting' => [
-
         // 'echo' => [
         //     'broadcaster' => 'pusher',
         //     'key' => env('VITE_PUSHER_APP_KEY'),
@@ -28,7 +26,11 @@ return [
         //     'encrypted' => true,
         //     'forceTLS' => true,
         // ],
+    ],
 
+    'database_notification' => [
+        'enabled' => true,
+        'polling_interval' => 15,
     ],
 
     /*
@@ -59,10 +61,7 @@ return [
     'path' => 'admin',
     'path' => 'seller',
 
-    'providers' => [
-        \App\Providers\Filament\AdminPanelProvider::class,
-        \App\Providers\Filament\SellerPanelProvider::class,
-    ],
+    'providers' => [\App\Providers\Filament\AdminPanelProvider::class],
 
     /*
     |--------------------------------------------------------------------------
@@ -92,5 +91,4 @@ return [
     */
 
     'livewire_loading_delay' => 'default',
-
 ];
