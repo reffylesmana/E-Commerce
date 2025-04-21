@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('shipping', function (Blueprint $table) {
             $table->id();
             $table->foreignId('order_id')->constrained()->onDelete('cascade');
-            $table->string('tracking_number')->nullable();
+            $table->string('no_resi')->nullable();
             $table->enum('shipping_method', [
                 'jne', 
                 'jnt', 

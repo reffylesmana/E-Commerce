@@ -51,9 +51,15 @@
                 </div>
 
                 <!-- Dropdown Menu -->
-                <div id="transaksi-dropdown" class="hidden transition-all duration-300 overflow-hidden max-h-0 " onclick="showApprovalAlert()">
+                <div id="transaksi-dropdown" class="hidden transition-all duration-300 overflow-hidden max-h-0 "
+                    onclick="showApprovalAlert()">
                     <div class="bg-white shadow-lg rounded-lg mt-1">
                         <div class="py-1">
+                            <a href="{{ $storeApproved ? route('seller.transactions.cart.cart') : 'javascript:void(0)' }}"
+                                class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-sm dropdown-item {{ $storeApproved ? 'hover:bg-gray-100' : 'opacity-50 cursor-not-allowed' }} ">
+                                <iconify-icon icon="heroicons:shopping-cart" class="text-lg"></iconify-icon>
+                                Keranjang Belanja
+                            </a>
                             <a href="{{ $storeApproved ? route('seller.transactions.orders.orders') : 'javascript:void(0)' }}"
                                 class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-sm dropdown-item {{ $storeApproved ? 'hover:bg-gray-100' : 'opacity-50 cursor-not-allowed' }} ">
                                 <iconify-icon icon="heroicons:shopping-bag" class="text-lg"></iconify-icon>
@@ -69,16 +75,6 @@
                                 <iconify-icon icon="heroicons:truck" class="text-lg"></iconify-icon>
                                 Pengiriman
                             </a>
-                            <a href="{{ $storeApproved ? route('seller.transactions.cart.cart') : 'javascript:void(0)' }}"
-                                class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-sm dropdown-item {{ $storeApproved ? 'hover:bg-gray-100' : 'opacity-50 cursor-not-allowed' }} ">
-                                <iconify-icon icon="heroicons:shopping-cart" class="text-lg"></iconify-icon>
-                                Keranjang Belanja
-                            </a>
-                            <a href="{{ $storeApproved ? route('seller.transactions.reports.reports') : 'javascript:void(0)' }}"
-                                class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-sm dropdown-item {{ $storeApproved ? 'hover:bg-gray-100' : 'opacity-50 cursor-not-allowed' }} ">
-                                <iconify-icon icon="heroicons:document-text" class="text-lg"></iconify-icon>
-                                Laporan Transaksi
-                            </a>
                         </div>
                     </div>
                 </div>
@@ -86,9 +82,19 @@
 
             <!-- Ulasan -->
             <div class="relative group" @if (!$storeApproved) onclick="showApprovalAlert()" @endif>
-                <a href="#" class="flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg {{ $storeApproved ? 'hover:bg-gray-100' : 'opacity-50 cursor-not-allowed' }} ">
+                <a href="#"
+                    class="flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg {{ $storeApproved ? 'hover:bg-gray-100' : 'opacity-50 cursor-not-allowed' }} ">
                     <iconify-icon icon="heroicons:chat-bubble-left-right" class="text-2xl"></iconify-icon>
                     <span class="nav-text">Ulasan & Testimoni</span>
+                </a>
+            </div>
+
+            <!-- Laporan -->
+            <div class="relative group" @if (!$storeApproved) onclick="showApprovalAlert()" @endif>
+                <a href="{{ $storeApproved ? route('seller.reports') : 'javascript:void(0)' }}"
+                    class="flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg {{ $storeApproved ? 'hover:bg-gray-100' : 'opacity-50 cursor-not-allowed' }} ">
+                    <iconify-icon icon="heroicons:document-text" class="text-2xl"></iconify-icon>
+                    <span class="nav-text">Laporan Transaksi</span>
                 </a>
             </div>
         </nav>

@@ -654,7 +654,7 @@
                                                     <div class="bg-gray-50 dark:bg-gray-700/30 p-3 rounded-lg">
                                                         <div class="flex items-center mb-2">
                                                             @for ($i = 1; $i <= 5; $i++)
-                                                                @if ($i <= $review->star)
+                                                                @if ($i <= $review->rating)
                                                                     <svg class="w-5 h-5 text-yellow-400"
                                                                         fill="currentColor" viewBox="0 0 20 20">
                                                                         <path
@@ -672,7 +672,7 @@
                                                             @endfor
                                                         </div>
                                                         <p class="text-sm text-gray-600 dark:text-gray-300">
-                                                            {{ $review->text }}</p>
+                                                            {{ $review->comment }}</p>
                                                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
                                                             {{ $review->created_at->format('d M Y') }}</p>
                                                     </div>

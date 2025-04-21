@@ -33,22 +33,22 @@ class Transaction extends Model
     /**
      * Get the order associated with the transaction.
      */
-    public function order(): HasOne
+    public function order()
     {
-        return $this->hasOne(Order::class);
+        return $this->hasOne(Order::class, 'transaction_id', 'id');
     }
 
     /**
      * Get the payments for the transaction.
-     */
-    public function payments(): HasMany
+     */    
+    public function payment()
     {
-        return $this->hasMany(Payment::class);
+        return $this->hasOne(Payment::class);
     }
 
-    public function payment()
-{
-    return $this->hasOne(Payment::class);
-}
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
 }
 

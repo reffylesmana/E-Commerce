@@ -38,83 +38,6 @@
 
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Penilaian Produk</h1>
 
-      <!-- Products to Review Section -->
-      <div class="mb-10">
-          <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Produk yang Perlu Dinilai</h2>
-          
-          @if(count($pendingReviews) > 0)
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-                  @foreach($pendingReviews as $item)
-                      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-                          <div class="p-6">
-                              <div class="flex items-center gap-4 mb-4">
-                                  <div class="flex-shrink-0 w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden">
-                                      @if($item->product && $item->product->photos->count() > 0)
-                                          <img src="{{ asset('storage/' . $item->product->photos->first()->photo) }}" alt="{{ $item->product->name }}" class="w-full h-full object-cover">
-                                      @else
-                                          <div class="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-700">
-                                              <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                              </svg>
-                                          </div>
-                                      @endif
-                                  </div>
-                                  <div class="flex-1 min-w-0">
-                                      <h4 class="text-sm font-medium text-gray-800 dark:text-white">{{ $item->product->name }}</h4>
-                                      <p class="text-xs text-gray-500 dark:text-gray-400">Pesanan #{{ $item->order->order_number }}</p>
-                                      <p class="text-xs text-gray-500 dark:text-gray-400">{{ $item->order->created_at->format('d M Y') }}</p>
-                                  </div>
-                              </div>
-                              
-                              <form action="{{ route('reviews.store') }}" method="POST" class="space-y-4">
-                                  @csrf
-                                  <input type="hidden" name="product_id" value="{{ $item->product_id }}">
-                                  <input type="hidden" name="order_id" value="{{ $item->order_id }}">
-                                  
-                                  <div>
-                                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Beri Rating</label>
-                                      <div class="flex items-center">
-                                          <div class="flex space-x-1">
-                                              @for($i = 1; $i <= 5; $i++)
-                                                  <label for="star-{{ $item->id }}-{{ $i }}" class="cursor-pointer">
-                                                      <input type="radio" id="star-{{ $item->id }}-{{ $i }}" name="star" value="{{ $i }}" class="sr-only peer">
-                                                      <svg class="w-8 h-8 text-gray-300 dark:text-gray-600 hover:text-yellow-400 peer-checked:text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                                                      </svg>
-                                                  </label>
-                                              @endfor
-                                          </div>
-                                      </div>
-                                  </div>
-                                  
-                                  <div>
-                                      <label for="text-{{ $item->id }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Ulasan Anda</label>
-                                      <textarea id="text-{{ $item->id }}" name="text" rows="3" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:focus:border-blue-500 dark:bg-gray-700 dark:text-white" placeholder="Bagikan pengalaman Anda dengan produk ini..."></textarea>
-                                  </div>
-                                  
-                                  <button type="submit" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-300">
-                                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                      </svg>
-                                      Kirim Ulasan
-                                  </button>
-                              </form>
-                          </div>
-                      </div>
-                  @endforeach
-              </div>
-          @else
-              <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 text-center">
-                  <div class="w-16 h-16 mx-auto rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-4">
-                      <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
-                  </div>
-                  <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Tidak Ada Produk yang Perlu Dinilai</h4>
-                  <p class="text-gray-500 dark:text-gray-400">Anda telah memberikan penilaian untuk semua produk yang Anda beli.</p>
-              </div>
-          @endif
-      </div>
 
       <!-- My Reviews Section -->
       <div>
@@ -150,7 +73,7 @@
                               {{ $review->created_at->format('d M Y') }}
                           </div>
                           <div class="mt-4 flex justify-end">
-                              <a href="{{ route('reviews.edit', $review->id) }}" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm">
+                              <a href="#" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm">
                                   Edit Ulasan
                               </a>
                           </div>

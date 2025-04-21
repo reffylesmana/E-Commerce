@@ -8,14 +8,17 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\SellerController;
 use App\Http\Controllers\AddressController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentCallbackController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\SellerCartController;
 use App\Http\Controllers\SellerOrderController;
 use App\Http\Controllers\TransactionController;
-use App\Http\Controllers\ShipmentController;
+use App\Http\Controllers\ShippingController;
 use App\Http\Controllers\StoreController;
 use Illuminate\Support\Facades\Route;
 
@@ -75,6 +78,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/orders/completed', [AccountController::class, 'completedOrders'])->name('orders.completed');
         Route::get('/orders/cancelled', [OrderController::class, 'cancelled'])->name('orders.cancelled');
         Route::get('/reviews', [AccountController::class, 'reviews'])->name('reviews.index');
+        Route::get('/review', [ReviewController::class, 'create'])->name('reviews.create');
+        Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+        Route::post('/account/orders/{order}/mark-delivered', [OrderController::class, 'markAsDelivered'])->name('orders.mark-as-delivered');
     });
 
     // Notifications
@@ -93,9 +99,9 @@ Route::middleware(['auth', \App\Http\Middleware\RoleMiddleware::class . ':seller
 
     ->group(function () {
         // Dashboard
-        Route::get('/dashboard', function () {
-            return view('seller.dashboard');
-        })->name('seller.dashboard');
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('seller.dashboard');
+
+        Route::get('/dashboard/chart-data', [DashboardController::class, 'getChartData'])->name('seller.dashboard.chart-data');
 
         // Store Management
         Route::prefix('store')->group(function () {
@@ -132,7 +138,6 @@ Route::middleware(['auth', \App\Http\Middleware\RoleMiddleware::class . ':seller
                     ->group(function () {
                         Route::get('/', [SellerOrderController::class, 'index'])->name('orders'); // seller.transactions.orders.index
                         Route::get('/{order}', [SellerOrderController::class, 'show'])->name('show'); // seller.transactions.orders.show
-                        Route::put('/{order}/update-status', [SellerOrderController::class, 'updateStatus'])->name('update-status'); // seller.transactions.orders.update-status
                     });
 
                 // Payments
@@ -147,25 +152,18 @@ Route::middleware(['auth', \App\Http\Middleware\RoleMiddleware::class . ':seller
                 Route::prefix('shipping')
                     ->name('shipping.') // seller.transactions.shipping.
                     ->group(function () {
-                        Route::get('/', [ShipmentController::class, 'index'])->name('shipping'); // seller.transactions.shipping.index
-                        Route::get('/{shipping}', [ShipmentController::class, 'show'])->name('show'); // seller.transactions.shipping.show
-                        Route::put('/{shipping}', [ShipmentController::class, 'update'])->name('update'); // seller.transactions.shipping.update
+                        Route::get('/', [ShippingController::class, 'index'])->name('shipping'); // seller.transactions.shipping.index
+                        Route::get('/{shipping}', [ShippingController::class, 'show'])->name('show'); // seller.transactions.shipping.show
+                        Route::put('/{shipping}', [ShippingController::class, 'update'])->name('update');
+                        Route::post('/{shipping}/send', [ShippingController::class, 'send'])->name('send');
                     });
 
                 // Cart
                 Route::prefix('cart')
                     ->name('cart.') // seller.transactions.cart.
                     ->group(function () {
-                        Route::get('/', [CartController::class, 'index'])->name('cart'); // seller.transactions.cart.index
-                        Route::post('/reminder/{user}', [CartController::class, 'sendReminder'])->name('reminder'); // seller.transactions.cart.reminder
-                    });
-
-                // Reports
-                Route::prefix('reports')
-                    ->name('reports.') // seller.transactions.reports.
-                    ->group(function () {
-                        Route::get('/', [ReportController::class, 'index'])->name('reports'); // seller.transactions.reports.index
-                        Route::get('/export', [ReportController::class, 'export'])->name('export'); // seller.transactions.reports.export
+                        Route::get('/', [SellerCartController::class, 'index'])->name('cart'); // seller.transactions.cart.index
+                        Route::post('/reminder/{user}', [SellerCartController::class, 'sendReminder'])->name('reminder'); // seller.transactions.cart.reminder
                     });
             });
 
@@ -173,6 +171,12 @@ Route::middleware(['auth', \App\Http\Middleware\RoleMiddleware::class . ':seller
         Route::prefix('reviews')->group(function () {
             Route::get('/', [ReviewController::class, 'sellerReviews'])->name('seller.reviews.index');
             Route::post('/{review}/reply', [ReviewController::class, 'storeReply'])->name('seller.reviews.reply');
+        });
+
+        // Reports
+        Route::prefix('reports')->group(function () {
+            Route::get('/', [ReportController::class, 'index'])->name('seller.reports');
+            Route::get('/export', [ReportController::class, 'export'])->name('seller.reports.export');
         });
     });
 

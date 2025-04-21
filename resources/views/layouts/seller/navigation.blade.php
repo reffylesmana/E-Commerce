@@ -9,7 +9,7 @@
         <div class="flex items-center gap-4">
             <!-- Notification -->
             <div class="relative dropdown-parent">
-                <button onclick="toggleDropdown('notificationDropdown')" 
+                <button type="button" onclick="toggleDropdown('notificationDropdown')" 
                         class="p-2 hover:bg-gray-100 rounded-full relative">
                     <iconify-icon icon="heroicons:bell" class="text-2xl"></iconify-icon>
                     @php
@@ -21,7 +21,7 @@
                         </span>
                     @endif
                 </button>
-                <div id="notificationDropdown" class="dropdown-menu absolute bg-white shadow-lg rounded-lg mt-2 py-2 w-80 z-50 right-0">
+                <div id="notificationDropdown" class="dropdown-menu absolute bg-white shadow-lg rounded-lg mt-2 py-2 w-80 z-50 right-0 hidden">
                     <div class="px-4 py-2 border-b border-gray-100 flex justify-between items-center">
                         <h3 class="font-medium text-gray-700">Notifikasi</h3>
                         @if($unreadCount > 0)
@@ -79,7 +79,7 @@
 
             <!-- User Profile -->
             <div class="relative dropdown-parent">
-                <button onclick="toggleDropdown('profileDropdown')" 
+                <button type="button" onclick="toggleDropdown('profileDropdown')" 
                         class="flex items-center gap-2 p-2 hover:bg-gray-100 rounded-lg">
                     @if(auth()->user()->image)
                         <img src="{{ asset('storage/images/' . auth()->user()->image) }}" 
@@ -100,9 +100,9 @@
                     <span class="nav-text">{{ auth()->user()->username }}</span>
                 </button>
                 
-                <div id="profileDropdown" class="dropdown-menu absolute bg-white shadow-lg rounded-lg mt-2 py-2 w-48">
+                <div id="profileDropdown" class="dropdown-menu absolute bg-white shadow-lg rounded-lg mt-2 py-2 w-48 right-0 z-50 hidden">
                     <a href="{{ route('profile.edit') }}" class="block px-4 py-2 hover:bg-gray-100">Profile</a>
-                    <form method="POST" action="{{ route('logout') }}">
+                    <form method="POST" action="{{ route('logout') }}" id="logout-form">
                         @csrf
                         <button type="submit" class="w-full text-left px-4 py-2 hover:bg-gray-100">
                             Logout
@@ -113,3 +113,39 @@
         </div>
     </div>
 </header>
+
+<script>
+// Fungsi untuk toggle dropdown
+function toggleDropdown(dropdownId) {
+    const dropdown = document.getElementById(dropdownId);
+    
+    // Tutup semua dropdown lain
+    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+        if (menu.id !== dropdownId) {
+            menu.classList.add('hidden');
+        }
+    });
+    
+    // Toggle dropdown yang diklik
+    dropdown.classList.toggle('hidden');
+}
+
+// Tutup dropdown saat klik di luar
+document.addEventListener('click', function(event) {
+    const isDropdownButton = event.target.closest('[onclick^="toggleDropdown"]');
+    const isInsideDropdown = event.target.closest('.dropdown-menu');
+    const isLogoutButton = event.target.closest('#logout-form button');
+    
+    // Jangan lakukan apa-apa jika mengklik tombol logout
+    if (isLogoutButton) {
+        return;
+    }
+    
+    // Jika klik bukan pada dropdown button dan bukan di dalam dropdown
+    if (!isDropdownButton && !isInsideDropdown) {
+        document.querySelectorAll('.dropdown-menu').forEach(menu => {
+            menu.classList.add('hidden');
+        });
+    }
+});
+</script>

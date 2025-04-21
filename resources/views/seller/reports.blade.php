@@ -5,6 +5,61 @@
 @section('content')
 <div class="container px-6 mx-auto">
     <h2 class="text-2xl font-semibold text-gray-800 mb-6">Laporan Transaksi</h2>
+
+        <!-- Sales Summary -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Total Penjualan</h3>
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-green-100 mr-4">
+                        <iconify-icon icon="heroicons:banknotes" class="text-2xl text-green-600"></iconify-icon>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Periode Ini</p>
+                        <p class="text-xl font-bold text-gray-800">Rp {{ number_format($totalSales ?? 0, 0, ',', '.') }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Jumlah Pesanan</h3>
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-indigo-100 mr-4">
+                        <iconify-icon icon="heroicons:shopping-bag" class="text-2xl text-indigo-600"></iconify-icon>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Total Order</p>
+                        <p class="text-2xl font-bold text-gray-800">{{ $totalOrders ?? 0 }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Rata-rata Order</h3>
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-blue-100 mr-4">
+                        <iconify-icon icon="heroicons:calculator" class="text-2xl text-blue-600"></iconify-icon>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Nilai Rata-rata</p>
+                        <p class="text-xl font-bold text-gray-800">Rp {{ number_format($averageOrderValue ?? 0, 0, ',', '.') }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Pelanggan Baru</h3>
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-yellow-100 mr-4">
+                        <iconify-icon icon="heroicons:user-plus" class="text-2xl text-yellow-600"></iconify-icon>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Periode Ini</p>
+                        <p class="text-2xl font-bold text-gray-800">{{ $newCustomers ?? 0 }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     
     <!-- Filter & Search -->
     <div class="bg-white rounded-lg shadow-md p-4 mb-6">
@@ -13,19 +68,19 @@
                 <div>
                     <label for="report_type" class="block text-sm font-medium text-gray-700 mb-1">Jenis Laporan</label>
                     <select id="report_type" name="report_type" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200">
-                        <option value="sales">Penjualan</option>
-                        <option value="products">Produk</option>
-                        <option value="customers">Pelanggan</option>
-                        <option value="payments">Pembayaran</option>
+                        <option value="sales" {{ $reportType == 'sales' ? 'selected' : '' }}>Penjualan</option>
+                        <option value="products" {{ $reportType == 'products' ? 'selected' : '' }}>Produk</option>
+                        <option value="customers" {{ $reportType == 'customers' ? 'selected' : '' }}>Pelanggan</option>
+                        <option value="payments" {{ $reportType == 'payments' ? 'selected' : '' }}>Pembayaran</option>
                     </select>
                 </div>
                 <div>
                     <label for="date_start" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai</label>
-                    <input type="date" id="date_start" name="date_start" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200">
+                    <input type="date" id="date_start" name="date_start" value="{{ $startDate->format('Y-m-d') }}" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200">
                 </div>
                 <div>
                     <label for="date_end" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Akhir</label>
-                    <input type="date" id="date_end" name="date_end" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200">
+                    <input type="date" id="date_end" name="date_end" value="{{ $endDate->format('Y-m-d') }}" class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200">
                 </div>
             </div>
             <div class="flex items-end">
@@ -35,61 +90,6 @@
                 <button type="button" id="export_report" class="ml-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     <iconify-icon icon="heroicons:document-arrow-down" class="inline-block mr-1"></iconify-icon> Export
                 </button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Sales Summary -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Total Penjualan</h3>
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-green-100 mr-4">
-                    <iconify-icon icon="heroicons:banknotes" class="text-2xl text-green-600"></iconify-icon>
-                </div>
-                <div>
-                    <p class="text-sm text-gray-500">Periode Ini</p>
-                    <p class="text-2xl font-bold text-gray-800">Rp {{ number_format($totalSales ?? 0, 0, ',', '.') }}</p>
-                </div>
-            </div>
-        </div>
-        
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Jumlah Pesanan</h3>
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-indigo-100 mr-4">
-                    <iconify-icon icon="heroicons:shopping-bag" class="text-2xl text-indigo-600"></iconify-icon>
-                </div>
-                <div>
-                    <p class="text-sm text-gray-500">Total Order</p>
-                    <p class="text-2xl font-bold text-gray-800">{{ $totalOrders ?? 0 }}</p>
-                </div>
-            </div>
-        </div>
-        
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Rata-rata Order</h3>
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-blue-100 mr-4">
-                    <iconify-icon icon="heroicons:calculator" class="text-2xl text-blue-600"></iconify-icon>
-                </div>
-                <div>
-                    <p class="text-sm text-gray-500">Nilai Rata-rata</p>
-                    <p class="text-2xl font-bold text-gray-800">Rp {{ number_format($averageOrderValue ?? 0, 0, ',', '.') }}</p>
-                </div>
-            </div>
-        </div>
-        
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Pelanggan Baru</h3>
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-yellow-100 mr-4">
-                    <iconify-icon icon="heroicons:user-plus" class="text-2xl text-yellow-600"></iconify-icon>
-                </div>
-                <div>
-                    <p class="text-sm text-gray-500">Periode Ini</p>
-                    <p class="text-2xl font-bold text-gray-800">{{ $newCustomers ?? 0 }}</p>
-                </div>
             </div>
         </div>
     </div>
@@ -105,10 +105,27 @@
     <!-- Report Table -->
     <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
         <div class="px-6 py-4 border-b border-gray-200">
-            <h3 class="text-lg font-semibold text-gray-800" id="report_title">Laporan Penjualan</h3>
+            <h3 class="text-lg font-semibold text-gray-800" id="report_title">
+                @switch($reportType)
+                    @case('sales')
+                        Laporan Penjualan
+                        @break
+                    @case('products')
+                        Laporan Produk
+                        @break
+                    @case('customers')
+                        Laporan Pelanggan
+                        @break
+                    @case('payments')
+                        Laporan Pembayaran
+                        @break
+                    @default
+                        Laporan Penjualan
+                @endswitch
+            </h3>
         </div>
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200" id="sales_report">
+            <table class="min-w-full divide-y divide-gray-200" id="sales_report" style="{{ $reportType == 'sales' ? '' : 'display: none;' }}">
                 <thead class="bg-gray-50">
                     <tr>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
@@ -123,7 +140,7 @@
                     @forelse($transactions ?? [] as $transaction)
                     <tr>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $transaction->created_at->format('d M Y') }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $transaction->invoice_number }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $transaction->order_number ?? $transaction->id }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $transaction->user->name }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             @switch($transaction->status)
@@ -162,11 +179,10 @@
                 </tbody>
             </table>
             
-            <table class="min-w-full divide-y divide-gray-200 hidden" id="products_report">
+            <table class="min-w-full divide-y divide-gray-200" id="products_report" style="{{ $reportType == 'products' ? '' : 'display: none;' }}">
                 <thead class="bg-gray-50">
                     <tr>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produk</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Terjual</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pendapatan</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stok</th>
@@ -178,16 +194,16 @@
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
                                 <div class="flex-shrink-0 h-10 w-10">
-                                    <img class="h-10 w-10 rounded-md object-cover" src="{{ $product->thumbnail_url ?? asset('img/placeholder.png') }}" alt="{{ $product->name }}">
+                                                <img src="{{ asset('storage/' . $product->photos->first()->photo) }}"
+                                                    alt="Foto Produk" class="object-cover w-full h-full">
                                 </div>
                                 <div class="ml-4">
                                     <div class="text-sm font-medium text-gray-900">{{ $product->name }}</div>
                                 </div>
                             </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $product->sku }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $product->sold_count }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Rp {{ number_format($product->revenue, 0, ',', '.') }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Rp {{ number_format($product->revenue ?? 0, 0, ',', '.') }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $product->stock }}</td>
                     </tr>
                     @empty
@@ -198,7 +214,7 @@
                 </tbody>
             </table>
             
-            <table class="min-w-full divide-y divide-gray-200 hidden" id="customers_report">
+            <table class="min-w-full divide-y divide-gray-200" id="customers_report" style="{{ $reportType == 'customers' ? '' : 'display: none;' }}">
                 <thead class="bg-gray-50">
                     <tr>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
@@ -215,7 +231,7 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $customer->email }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $customer->order_count }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Rp {{ number_format($customer->total_spent, 0, ',', '.') }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $customer->last_order_date->format('d M Y') }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ Carbon\Carbon::parse($customer->last_order_date)->format('d M Y') }}</td>
                     </tr>
                     @empty
                     <tr>
@@ -225,7 +241,7 @@
                 </tbody>
             </table>
             
-            <table class="min-w-full divide-y divide-gray-200 hidden" id="payments_report">
+            <table class="min-w-full divide-y divide-gray-200" id="payments_report" style="{{ $reportType == 'payments' ? '' : 'display: none;' }}">
                 <thead class="bg-gray-50">
                     <tr>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Metode Pembayaran</th>
@@ -270,26 +286,26 @@
         
         <!-- Pagination -->
         <div class="px-6 py-4 bg-white border-t border-gray-200">
-            @if(isset($transactions) && $transactions->hasPages())
-                {{ $transactions->links() }}
+            @if(isset($transactions) && method_exists($transactions, 'links') && $reportType == 'sales')
+                {{ $transactions->appends(request()->except('page'))->links() }}
             @endif
         </div>
     </div>
 </div>
 
-@endsection
 
-@section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Initialize date inputs with current month
-        const today = new Date();
-        const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-        const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-        
-        document.getElementById('date_start').valueAsDate = firstDay;
-        document.getElementById('date_end').valueAsDate = lastDay;
+        // Initialize date inputs with current month if not set
+        if (!document.getElementById('date_start').value) {
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            
+            document.getElementById('date_start').valueAsDate = firstDay;
+            document.getElementById('date_end').valueAsDate = lastDay;
+        }
         
         // Sales Chart
         const ctx = document.getElementById('salesChart').getContext('2d');
@@ -341,28 +357,28 @@
         
         reportType.addEventListener('change', function() {
             // Hide all reports
-            salesReport.classList.add('hidden');
-            productsReport.classList.add('hidden');
-            customersReport.classList.add('hidden');
-            paymentsReport.classList.add('hidden');
+            salesReport.style.display = 'none';
+            productsReport.style.display = 'none';
+            customersReport.style.display = 'none';
+            paymentsReport.style.display = 'none';
             
             // Show selected report
             switch(this.value) {
                 case 'sales':
                     reportTitle.textContent = 'Laporan Penjualan';
-                    salesReport.classList.remove('hidden');
+                    salesReport.style.display = '';
                     break;
                 case 'products':
                     reportTitle.textContent = 'Laporan Produk';
-                    productsReport.classList.remove('hidden');
+                    productsReport.style.display = '';
                     break;
                 case 'customers':
                     reportTitle.textContent = 'Laporan Pelanggan';
-                    customersReport.classList.remove('hidden');
+                    customersReport.style.display = '';
                     break;
                 case 'payments':
                     reportTitle.textContent = 'Laporan Pembayaran';
-                    paymentsReport.classList.remove('hidden');
+                    paymentsReport.style.display = '';
                     break;
             }
         });
@@ -379,7 +395,7 @@
                 return;
             }
             
-            window.location.href = `/seller/transactions/reports?type=${reportType}&start=${dateStart}&end=${dateEnd}`;
+            window.location.href = `{{ route('seller.reports') }}?type=${reportType}&start=${dateStart}&end=${dateEnd}`;
         });
         
         // Export Report Button
@@ -394,7 +410,7 @@
                 return;
             }
             
-            window.location.href = `/seller/transactions/reports/export?type=${reportType}&start=${dateStart}&end=${dateEnd}`;
+            window.location.href = `{{ route('seller.reports.export') }}?type=${reportType}&start=${dateStart}&end=${dateEnd}`;
         });
     });
 </script>

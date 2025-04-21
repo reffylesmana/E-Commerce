@@ -2,60 +2,63 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Payment;
+use App\Models\Transaction; // Assuming Transaction is the model for the transactions table
+use App\Models\Payment; // Assuming Payment is the model for the payments table
 use Illuminate\Support\Facades\Auth;
 
 class PaymentController extends Controller
 {
+    /**
+     * Display a listing of the payments.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\View\View
+     */
     public function index(Request $request)
     {
-        // Ambil seller ID yang sedang login (asumsinya pakai relasi user->seller)
-        $sellerId = Auth::user()->seller->id ?? null;
-
-        // Query dasar
-        $query = Payment::with(['transaction.order'])
-            ->whereHas('transaction.order', function ($q) use ($sellerId) {
-                $q->where('user_id', $sellerId);
-            });
-
-        // Filter status
+        $seller = Auth::user();
+    
+        // Ambil payment yang transaksinya punya order dengan item dari produk seller ini
+        $query = Payment::whereHas('transaction.order.orderItems.product', function ($q) use ($seller) {
+            $q->where('user_id', $seller->id);
+        });
+    
+        // Filter optional
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
-
-        // Filter metode pembayaran
-        if ($request->filled('payment_method')) {
-            $query->where('payment_method', $request->payment_method);
+    
+        if ($request->filled('date')) {
+            $query->whereDate('created_at', $request->date);
         }
-
-        // Filter pencarian berdasarkan payment_id
-        if ($request->filled('search')) {
-            $query->where('payment_id', 'like', '%' . $request->search . '%');
-        }
-
-        // Paginate hasil
-        $payments = $query->latest()->paginate(10);
-
-        // Hitung summary
-        $totalPayments = (clone $query)->where('status', 'success')->sum('amount');
-        $successCount  = (clone $query)->where('status', 'success')->count();
-        $pendingCount  = (clone $query)->where('status', 'pending')->count();
-
-        return view('seller.transactions.payments.payments', compact('payments', 'totalPayments', 'successCount', 'pendingCount'));
+    
+        $payments = $query->with('transaction.order.orderItems.product')->orderBy('created_at', 'desc')->paginate(10);
+    
+        // Hitung total pembayaran dan jumlah status
+        $totalPayments = $payments->sum('amount');
+        $successCount = $payments->where('status', 'success')->count();
+        $pendingCount = $payments->where('status', 'pending')->count();
+    
+        return view('seller.transactions.payments.payments', compact(
+            'payments', 'totalPayments', 'successCount', 'pendingCount'
+        ));
     }
-
-    public function show($id)
+    
+    
+    /**
+     * Display the specified payment.
+     *
+     * @param  \App\Models\Payment  $payment
+     * @return \Illuminate\View\View
+     */
+    public function show(Payment $payment)
     {
-        $payment = Payment::with(['transaction.order'])->findOrFail($id);
+        $seller = Auth::user();
 
-        // Validasi agar hanya seller terkait yang bisa melihat
-        $sellerId = Auth::user()->seller->id ?? null;
-        if ($payment->transaction->order->seller_id != $sellerId) {
-            abort(403, 'Unauthorized');
-        }
+        // Check if the payment belongs to the seller's transaction
+        $transaction = $payment->transaction; // Assuming there's a relationship defined in the Payment model
 
-        return view('seller.transactions.payments.show', compact('payment'));
+        return view('seller.transactions.payments.detail-payment', compact('payment'));
     }
 }

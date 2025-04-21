@@ -27,9 +27,10 @@ class Payment extends Model
     /**
      * Get the transaction that owns the payment.
      */
-    public function transaction(): BelongsTo
+    public function transaction()
     {
         return $this->belongsTo(Transaction::class);
     }
+    
 }
 

@@ -4,9 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ config('app.name', 'TailAdmin Dashboard') }}</title>
+    <title>{{ config('TechnoShop', 'Seller Dashboard') }}</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="description" content="TailAdmin Dashboard Template">
+    <meta name="description" content="TechnoShop">
 
     <!-- Iconify CDN -->
     <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
@@ -134,6 +134,8 @@
     <!-- Versi 1.10.25 (Legacy) -->
     <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap5.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <!-- DataTables Versi 1.11.5 (Disarankan) -->
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>

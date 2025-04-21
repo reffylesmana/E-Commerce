@@ -61,9 +61,14 @@ class Product extends Model
     {
         return $this->hasMany(Review::class);
     }
-    
+
     public function seller()
     {
-        return $this->belongsTo(User::class, 'user_id'); // user_id = seller
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
     }
 }

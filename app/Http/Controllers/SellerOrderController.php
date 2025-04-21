@@ -2,72 +2,88 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Models\Order;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth; 
+use App\Models\Order;
+use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class SellerOrderController extends Controller
 {
+    /**
+     * Display a listing of the orders.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\View\View
+     */
     public function index(Request $request)
     {
-        $sellerId = Auth::user()->id;
+        $seller = Auth::user();
 
-        $query = Order::whereHas('items', function($query) use ($sellerId) {
-                $query->where('user_id', $sellerId);
-            })
-            ->with(['user', 'items'])
-            ->latest();
+        $query = Order::whereHas('orderItems.product', function ($q) use ($seller) {
+            $q->where('user_id', $seller->id);
+        });
 
-        // Filter status
+        // Apply filters
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        // Filter tanggal
-        if ($request->filled('date')) {
-            $query->whereDate('created_at', $request->date);
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
         }
 
-        // Pencarian
-        if ($request->filled('search')) {
-            $query->where('order_number', 'like', '%'.$request->search.'%');
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
         }
 
-        $orders = $query->paginate(10)->withQueryString();
+        // Get orders with pagination
+        $orders = $query->orderBy('created_at', 'desc')->paginate(10);
 
-        return view('seller.transactions.orders.orders', compact('orders'));
+        // Get counts for stats
+        $totalOrders = Order::whereHas('orderItems.product', function ($q) use ($seller) {
+            $q->where('user_id', $seller->id);
+        })->count();
+
+        $pendingOrders = Order::whereHas('orderItems.product', function ($q) use ($seller) {
+            $q->where('user_id', $seller->id);
+        })->where('status', 'pending')->count();
+
+        $processingOrders = Order::whereHas('orderItems.product', function ($q) use ($seller) {
+            $q->where('user_id', $seller->id);
+        })->where('status', 'processing')->count();
+
+        $completedOrders = Order::whereHas('orderItems.product', function ($q) use ($seller) {
+            $q->where('user_id', $seller->id);
+        })->where('status', 'completed')->count();
+
+        return view('seller.transactions.orders.orders', compact('orders', 'totalOrders', 'pendingOrders', 'processingOrders', 'completedOrders'));
     }
-    
 
-    // Show the order details
-    public function show($id)
+    /**
+     * Display the specified order.
+     *
+     * @param  \App\Models\Order  $order
+     * @return \Illuminate\View\View
+     */
+    public function show(Order $order)
     {
-        $order = Order::with('user')->findOrFail($id);
-        return view('seller.transactions.orders.show', compact('order'));
+        $seller = Auth::user();
+
+        $order->load('orderItems.product');
+
+        $belongsToSeller = $order->orderItems->contains(function ($item) use ($seller) {
+            return $item->product->user_id === $seller->id;
+        });
+        
+        if (!$belongsToSeller) {
+            abort(403, 'Unauthorized action.');
+        }
+        
+
+        // Eager load relationships
+        $order->load(['user', 'orderItems.product.Photos', 'shipping']);
+
+        return view('seller.transactions.orders.detail-order', compact('order'));
     }
 
-    // Update the status of an order
-    public function updateStatus(Request $request, $id)
-    {
-        $order = Order::findOrFail($id);
-
-        // Validate the request
-        $request->validate([
-            'status' => 'required|in:pending,processing,shipped,completed,cancelled',
-            'notes' => 'nullable|string|max:255',
-        ]);
-
-        // Update the order status
-        $order->status = $request->status;
-        $order->notes = $request->notes;
-        $order->save();
-
-        // Redirect back to the order list with success message
-        return redirect()->route('seller.transactions.orders.orders')->with('success', 'Status pemesanan berhasil diperbarui');
-    }
 }
-
-
-
-

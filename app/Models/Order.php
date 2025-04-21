@@ -12,16 +12,7 @@ class Order extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'user_id',
-        'transaction_id',
-        'order_number',
-        'total_amount',
-        'shipping_address',
-        'shipping_method',
-        'status',
-        'notes',
-    ];
+    protected $fillable = ['user_id', 'transaction_id', 'order_number', 'total_amount', 'shipping_address', 'shipping_method', 'status', 'notes'];
 
     /**
      * Get the user that owns the order.
@@ -34,9 +25,9 @@ class Order extends Model
     /**
      * Get the transaction that owns the order.
      */
-    public function transaction(): BelongsTo
+    public function transaction()
     {
-        return $this->belongsTo(Transaction::class);
+        return $this->belongsTo(Transaction::class, 'transaction_id', 'id');
     }
 
     /**
@@ -55,21 +46,36 @@ class Order extends Model
         return $this->hasOne(Shipping::class);
     }
 
+    /**
+     * Get the payment record associated with the order.
+     */
+    public function payment()
+    {
+        return $this->hasOneThrough(
+            Payment::class,
+            Transaction::class,
+            'id', 
+            'transaction_id', 
+            'transaction_id', 
+            'id' 
+        );
+    }
+
     public function orderItems()
     {
         return $this->hasMany(OrderItem::class);
     }
 
     public function scopeExpired($query)
+    {
+        return $query->where('status', 'pending')->where('created_at', '<', now()->subDay());
+    }
+
+    public function reviews()
 {
-    return $query->where('status', 'pending')
-        ->where('created_at', '<', now()->subDay());
+    return $this->hasMany(Review::class);
 }
 
-
-// Tambahkan di properti model
-protected $dates = ['created_at'];
+    // Tambahkan di properti model
+    protected $dates = ['created_at'];
 }
-
-
-

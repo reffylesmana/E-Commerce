@@ -476,7 +476,6 @@
                 Tambah Produk
             </a>
         </div>
-        
         <!-- Stats Cards -->
         <div class="stats-grid mb-8">
             <!-- Total Products Card -->

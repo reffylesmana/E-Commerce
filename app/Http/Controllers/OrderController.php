@@ -222,4 +222,40 @@ class OrderController extends Controller
 
     return view('orders.cancelled', compact('orders'));
 }
+
+/**
+     * Mark an order as delivered.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function markAsDelivered(Request $request, $id)
+    {
+        $order = Order::findOrFail($id);
+        
+        // Pastikan order milik user yang sedang login
+        if ($order->user_id !== Auth::id()) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki akses ke pesanan ini.');
+        }
+        
+        // Pastikan status order adalah shipped
+        if ($order->status !== 'shipped') {
+            return redirect()->back()->with('error', 'Hanya pesanan dengan status Dikirim yang dapat ditandai sebagai Diterima.');
+        }
+        
+        // Update status order menjadi completed
+        $order->status = 'completed';
+        $order->save();
+        
+        // Update status shipping menjadi delivered dan set delivered_at
+        if ($order->shipping) {
+            $order->shipping->status = 'delivered';
+            $order->shipping->delivered_at = Carbon::now();
+            $order->shipping->save();
+        }
+        
+        // Redirect dengan pesan sukses
+        return redirect()->route('orders.completed')->with('success', 'Pesanan berhasil ditandai sebagai Diterima.');
+    }
 }

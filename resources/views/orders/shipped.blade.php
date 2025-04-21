@@ -121,7 +121,7 @@
                                       <a href="{{ route('orders.show', $order->id) }}" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
                                           Lihat Detail
                                       </a>
-                                      <form method="POST" action="{{ route('shipments.mark-delivered', $order->shipping->id) }}">
+                                      <form method="POST" action="{{ route('orders.mark-as-delivered', $order->id) }}">
                                           @csrf
                                           <button type="submit" class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors duration-300">
                                               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -163,4 +163,3 @@
   </div>
 </div>
 @endsection
-

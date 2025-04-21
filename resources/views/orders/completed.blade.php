@@ -114,12 +114,38 @@
                                   <a href="{{ route('orders.show', $order->id) }}" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
                                       Lihat Detail
                                   </a>
-                                  <a href="{{ route('reviews.create', ['order_id' => $order->id]) }}" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors duration-300">
-                                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                      </svg>
-                                      Beri Penilaian
-                                  </a>
+                                  
+                                  @php
+                                      // Cek apakah semua item dalam pesanan ini sudah direview
+                                      $allReviewed = true;
+                                      foreach ($order->orderItems as $item) {
+                                          $review = \App\Models\Review::where('order_id', $order->id)
+                                              ->where('product_id', $item->product_id)
+                                              ->where('order_item_id', $item->id)
+                                              ->first();
+                                              
+                                          if (!$review) {
+                                              $allReviewed = false;
+                                              break;
+                                          }
+                                      }
+                                  @endphp
+                                  
+                                  @if(!$allReviewed)
+                                      <a href="{{ route('reviews.create', ['order_id' => $order->id]) }}" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors duration-300">
+                                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                          </svg>
+                                          Beri Penilaian
+                                      </a>
+                                  @else
+                                      <a href="{{ route('reviews.index') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-300">
+                                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
+                                          </svg>
+                                          Lihat Penilaian
+                                      </a>
+                                  @endif
                               </div>
                           </div>
                       </div>
@@ -152,4 +178,3 @@
   </div>
 </div>
 @endsection
-

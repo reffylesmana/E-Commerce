@@ -38,4 +38,9 @@ class OrderItem extends Model
     {
         return $this->belongsTo(User::class, 'seller_id');
     }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
 }
