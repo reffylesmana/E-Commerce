@@ -41,14 +41,6 @@ class AccountController extends Controller
             ->where('status', 'shipped')
             ->count();
 
-        $completedCount = Order::where('user_id', $user->id)
-            ->where('status', 'completed')
-            ->count();
-
-        $canceledCount = Order::where('user_id', $user->id)
-            ->where('status', 'cancelled')
-            ->count();
-
         $wishlists = Wishlist::where('user_id', $user->id)
             ->with(['product' => function($query) {
                 $query->with(['photos', 'category', 'store']);
@@ -78,8 +70,6 @@ class AccountController extends Controller
             'recentOrders',
             'unpaidCount',
             'processingCount',
-            'completedCount',
-            'canceledCount',
             'wishlists',
             'shippedCount',
             'reviewNeededCount'

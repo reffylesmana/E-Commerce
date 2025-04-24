@@ -463,7 +463,7 @@
             
             <div class="stat-card blue animate-fade-in-delay-1">
                 <div class="stat-icon blue">
-                    <i class="iconify text-2xl" data-icon="tabler:check-circle"></i>
+                    <i class="iconify text-2xl" data-icon="tabler:check"></i>
                 </div>
                 <div class="stat-label">Pembayaran Sukses</div>
                 <div class="stat-value">{{ $successCount ?? 0 }}</div>

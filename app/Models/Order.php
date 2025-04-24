@@ -51,14 +51,7 @@ class Order extends Model
      */
     public function payment()
     {
-        return $this->hasOneThrough(
-            Payment::class,
-            Transaction::class,
-            'id', 
-            'transaction_id', 
-            'transaction_id', 
-            'id' 
-        );
+        return $this->hasOneThrough(Payment::class, Transaction::class, 'id', 'transaction_id', 'transaction_id', 'id');
     }
 
     public function orderItems()
@@ -72,9 +65,15 @@ class Order extends Model
     }
 
     public function reviews()
-{
-    return $this->hasMany(Review::class);
-}
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    // Model Order
+    public function products()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
 
     // Tambahkan di properti model
     protected $dates = ['created_at'];

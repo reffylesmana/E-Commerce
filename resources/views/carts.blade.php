@@ -60,7 +60,7 @@
                                                 <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-1">{{ $item->product->name }}</h3>
                                                 <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
                                                     <span class="mr-2">Kategori: {{ $item->product->category->name ?? 'Uncategorized' }}</span>
-                                                    <span>SKU: {{ $item->product->sku ?? 'N/A' }}</span>
+                                                    <span>SKU: {{ $item->product->slug ?? 'N/A' }}</span>
                                                 </p>
                                             </div>
                                             <div class="mt-2 sm:mt-0">
@@ -167,13 +167,62 @@
                                     Rp {{ number_format($tax, 0, ',', '.') }}
                                 </span>
                             </div>
+                            <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
+                                <form action="{{ route('cart.applyDiscount') }}" method="POST">
+                                    @csrf
+                                    <div class="flex gap-2">
+                                        <input type="text" 
+                                            name="code" 
+                                            placeholder="Masukkan kode diskon"
+                                            class="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <button type="submit" 
+                                            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                                            Terapkan
+                                        </button>
+                                    </div>
+                                </form>
+                                
+                                <!-- Tampilkan Diskon Aktif -->
+                                @if($discount)
+                                    <div class="mt-4 flex justify-between items-center bg-green-50 dark:bg-green-900 p-3 rounded-lg">
+                                        <div>
+                                            <span class="font-medium text-green-700 dark:text-green-300">
+                                                {{ $discount['name'] }} ({{ $discount['code'] }})
+                                            </span>
+                                            <form action="{{ route('cart.removeDiscount') }}" method="POST" class="inline-block ml-2">
+                                                @csrf
+                                                <button type="submit" class="text-green-700 dark:text-green-300 hover:text-green-800 dark:hover:text-green-400 text-sm">
+                                                    [Hapus]
+                                                </button>
+                                            </form>
+                                        </div>
+                                        <span class="text-green-700 dark:text-green-300 font-medium">
+                                            @if($discount['type'] === 'percentage')
+                                                -{{ $discount['value'] }}%
+                                            @else
+                                                -Rp {{ number_format($discount['value'], 0, ',', '.') }}
+                                            @endif
+                                        </span>
+                                    </div>
+                                @endif
+                            </div>
+                        
+                            <!-- Hitungan Diskon -->
+                            @if($discount)
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600 dark:text-gray-400">Diskon</span>
+                                    <span class="text-red-600 dark:text-red-400 font-medium">
+                                        -Rp {{ number_format($discountValue, 0, ',', '.') }}
+                                    </span>
+                                </div>
+                            @endif
                             <div class="border-t border-gray-200 dark:border-gray-700 pt-4 flex justify-between">
                                 <span class="text-lg font-semibold text-gray-800 dark:text-white">Total</span>
                                 <span id="total" class="text-lg font-bold text-blue-600 dark:text-blue-400">
                                     Rp {{ number_format($total, 0, ',', '.') }}
                                 </span>
                             </div>
-                        </div>
+                        </div> 
                         
                         <!-- Checkout Button -->
                         <button id="checkout-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg transition-colors duration-300 flex items-center justify-center {{ $cartItems->count() === 0 ? 'opacity-50 cursor-not-allowed' : '' }}" {{ $cartItems->count() === 0 ? 'disabled' : '' }}>

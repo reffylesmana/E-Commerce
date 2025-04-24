@@ -163,7 +163,8 @@
                         </div>
 
                         <div class="glass-effect rounded-3xl shadow-xl border border-white/20 dark:border-gray-700/30 overflow-hidden">
-                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 p-4">
+                            <!-- Baris Pertama (4 Menu) -->
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 p-4">
                                 <!-- Semua Pesanan -->
                                 <a href="{{ route('orders.all') }}" class="relative flex flex-col items-center p-4 rounded-xl hover:bg-blue-100/50 dark:hover:bg-blue-900/30 transition-colors">
                                     <div class="w-14 h-14 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-2">
@@ -216,7 +217,10 @@
                                         <span class="absolute -top-1 -right-1 bg-purple-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{{ $shippedCount }}</span>
                                     @endif
                                 </a>
+                            </div>
                         
+                            <!-- Baris Kedua (3 Menu) -->
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 p-4">
                                 <!-- Selesai -->
                                 <a href="{{ route('orders.completed') }}" class="relative flex flex-col items-center p-4 rounded-xl hover:bg-green-100/50 dark:hover:bg-green-900/30 transition-colors">
                                     <div class="w-14 h-14 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-2">
@@ -230,7 +234,7 @@
                         
                                 <!-- Dibatalkan -->
                                 <a href="{{ route('orders.cancelled') }}" class="relative flex flex-col items-center p-4 rounded-xl hover:bg-red-100/50 dark:hover:bg-red-900/30 transition-colors">
-                                    <div class="w-14 h-14 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-2">
+                                    <div class="w-14 h-14 rounded-full bg-red-100 dark:grid-cols-3bg-red-900/30 flex items-center justify-center mb-2">
                                         <svg class="w-7 h-7 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                         </svg>

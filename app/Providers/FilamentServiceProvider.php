@@ -16,5 +16,12 @@ class FilamentServiceProvider extends ServiceProvider
                 abort(403, 'Unauthorized action.');
             }
         });
+        Filament::serving(function () {
+            Filament::registerNavigationGroups([
+                'Analytics',
+                'Manajemen Konten',
+                'Pengaturan',
+            ]);
+        });
     }
 }

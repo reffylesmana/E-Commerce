@@ -7,7 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Product;
+use App\Models\Address;
 use App\Models\Review;
 use App\Models\Payment;
 use App\Models\User;
@@ -51,16 +53,20 @@ class DashboardController extends Controller
                 break;
             case 'thisMonth':
                 $startDate = Carbon::now()->startOfMonth();
-                $endDate = Carbon::now()->endOfDay();
+                $endDate = Carbon::now()->endOfMonth(); 
                 break;
             case 'lastMonth':
                 $startDate = Carbon::now()->subMonth()->startOfMonth();
                 $endDate = Carbon::now()->subMonth()->endOfMonth();
                 break;
             case 'custom':
-                $startDate = $request->has('start') ? Carbon::parse($request->input('start')) : Carbon::now()->subDays(7)->startOfDay();
-                $endDate = $request->has('end') ? Carbon::parse($request->input('end'))->endOfDay() : Carbon::now()->endOfDay();
+                $startDate = $request->has('start') ? Carbon::parse($request->input('start')) : now()->subDays(7);
+                $endDate = $request->has('end') ? Carbon::parse($request->input('end')) : now();
                 break;
+        }
+        
+        if ($startDate->gt($endDate)) {
+            $endDate = $startDate->copy()->addDay();
         }
         
         // Get previous period for comparison
@@ -127,7 +133,7 @@ class DashboardController extends Controller
         $newReviews = $this->getNewReviewsCount($seller->id, $startDate, $endDate);
         
         // Get average rating
-        // $averageRating = $this->getAverageRating($seller->id);
+        $averageRating = $this->getAverageRating($seller->id);
         
         // Get recent orders
         $recentOrders = $this->getRecentOrders($seller->id, 5);
@@ -154,7 +160,8 @@ class DashboardController extends Controller
         $customerDemographicsData = $this->getCustomerDemographicsData($seller->id);
         
         // // Get review ratings data for chart
-        // $reviewRatingsData = $this->getReviewRatingsData($seller->id);
+        $reviewRatingsData = $this->getReviewRatingsData($seller->id);
+
         
         return view('seller.dashboard', compact(
             'totalRevenue',
@@ -169,7 +176,7 @@ class DashboardController extends Controller
             'processingOrders',
             'lowStockProducts',
             'newReviews',
-            // 'averageRating',
+            'averageRating',
             'recentOrders',
             'topProducts',
             'recentReviews',
@@ -178,7 +185,7 @@ class DashboardController extends Controller
             'orderStatusData',
             'paymentMethodsData',
             'customerDemographicsData',
-            // 'reviewRatingsData'
+            'reviewRatingsData'
         ));
     }
     
@@ -213,7 +220,6 @@ class DashboardController extends Controller
         
         // Get sales and revenue data for the selected period
         $salesRevenueData = $this->getSalesRevenueData($seller->id, $startDate, $endDate, $period);
-        dd($salesRevenueData);
         
         return response()->json($salesRevenueData);
     }
@@ -228,10 +234,14 @@ class DashboardController extends Controller
      */
     private function getTotalRevenue($sellerId, $startDate, $endDate)
     {
-        return Order::where('user_id', $sellerId)
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->where('status', '!=', 'cancelled')
-            ->sum('total_amount');
+        return OrderItem::whereHas('product', function ($q) use ($sellerId) {
+                $q->where('user_id', $sellerId);
+            })
+            ->whereHas('order', function ($q) use ($startDate, $endDate) {
+                $q->whereBetween('created_at', [$startDate, $endDate])
+                  ->whereNotIn('status', ['cancelled', 'failed']);
+            })
+            ->sum(DB::raw('order_items.price * order_items.quantity')); 
     }
     
     /**
@@ -244,7 +254,9 @@ class DashboardController extends Controller
      */
     private function getTotalOrders($sellerId, $startDate, $endDate)
     {
-        return Order::where('user_id', $sellerId)
+        return Order::whereHas('orderItems.product', function ($q) use ($sellerId) {
+                $q->where('user_id', $sellerId);
+            })
             ->whereBetween('created_at', [$startDate, $endDate])
             ->where('status', '!=', 'cancelled')
             ->count();
@@ -276,9 +288,11 @@ class DashboardController extends Controller
      */
     private function getOrderCountByStatus($sellerId, $status)
     {
-        return Order::where('user_id', $sellerId)
-            ->where('status', $status)
-            ->count();
+        return Order::whereHas('orderItems.product', function ($q) use ($sellerId) {
+            $q->where('user_id', $sellerId);
+        })
+        ->where('status', $status) 
+        ->count();
     }
     
     /**
@@ -321,13 +335,13 @@ class DashboardController extends Controller
      * @param  int  $sellerId
      * @return float
      */
-    // private function getAverageRating($sellerId)
-    // {
-    //     return Review::whereHas('product', function ($query) use ($sellerId) {
-    //             $query->where('user_id', $sellerId);
-    //         })
-    //         ->avg('rating') ?? 0;
-    // }
+    private function getAverageRating($sellerId)
+    {
+        return Review::whereHas('product', function ($query) use ($sellerId) {
+                $query->where('user_id', $sellerId);
+            })
+            ->avg('rating') ?? 0;
+    }
     
     /**
      * Get recent orders for the seller.
@@ -338,7 +352,9 @@ class DashboardController extends Controller
      */
     private function getRecentOrders($sellerId, $limit)
     {
-        return Order::where('user_id', $sellerId)
+        return Order::whereHas('orderItems.product', function ($q) use ($sellerId) {
+                $q->where('user_id', $sellerId);
+            })
             ->with('user')
             ->orderBy('created_at', 'desc')
             ->limit($limit)
@@ -425,17 +441,19 @@ class DashboardController extends Controller
         }
         
         // Get sales data
-        $salesData = Order::where('user_id', $sellerId)
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->where('status', '!=', 'cancelled')
-            ->select(
-                DB::raw("DATE_FORMAT(created_at, '{$format}') as period"),
-                DB::raw('COUNT(*) as count'),
-                DB::raw('SUM(total_amount) as revenue')
-            )
-            ->groupBy('period')
-            ->orderBy('period')
-            ->get();
+        $salesData = Order::whereHas('orderItems.product', function($q) use ($sellerId) {
+            $q->where('user_id', $sellerId);
+        })
+        ->whereBetween('created_at', [$startDate, $endDate])
+        ->where('status', '!=', 'cancelled')
+        ->select(
+            DB::raw("DATE_FORMAT(created_at, '{$format}') as period"),
+            DB::raw('COUNT(*) as count'),
+            DB::raw('SUM(total_amount) as revenue')
+        )
+        ->groupBy('period')
+        ->orderBy('period')
+        ->get();
         
         // Create a complete date range with zeros for missing dates
         $dateRange = [];
@@ -567,15 +585,15 @@ class DashboardController extends Controller
      */
     private function getPaymentMethodsData($sellerId, $startDate, $endDate)
     {
-        $paymentData = Payment::whereHas('transaction.order', function ($query) use ($sellerId, $startDate, $endDate) {
-                $query->where('user_id', $sellerId)
-                    ->whereBetween('created_at', [$startDate, $endDate])
-                    ->where('status', '!=', 'cancelled');
+        // Get payment data for the seller within the specified date range
+        $paymentData = Payment::whereBetween('created_at', [$startDate, $endDate])
+            ->whereHas('transaction.order.orderItems.product', function($query) use ($sellerId) {
+                $query->where('user_id', $sellerId);
             })
             ->select('payment_method', DB::raw('COUNT(*) as count'))
             ->groupBy('payment_method')
             ->get();
-        
+    
         $labels = [];
         $data = [];
         
@@ -599,13 +617,24 @@ class DashboardController extends Controller
      */
     private function getCustomerDemographicsData($sellerId)
     {
-        // This is a placeholder. In a real application, you would query user demographics
-        // For now, we'll return sample data
+        // Query untuk mengambil jumlah alamat berdasarkan tipe untuk seller tertentu
+        $addressTypes = ['home', 'office', 'other'];
+        $data = [];
+    
+        foreach ($addressTypes as $type) {
+            $count = Address::where('user_id', $sellerId)
+                ->where('address_type', $type)
+                ->count();
+    
+            $data[] = $count;
+        }
+    
         return [
-            'labels' => ['18-24', '25-34', '35-44', '45-54', '55+'],
-            'data' => [15, 35, 25, 15, 10]
+            'labels' => ['Home', 'Office', 'Other'],
+            'data' => $data
         ];
     }
+    
     
     /**
      * Get review ratings data for chart.
@@ -613,27 +642,27 @@ class DashboardController extends Controller
      * @param  int  $sellerId
      * @return array
      */
-    // private function getReviewRatingsData($sellerId)
-    // {
-    //     $ratingsData = Review::whereHas('product', function ($query) use ($sellerId) {
-    //             $query->where('user_id', $sellerId);
-    //         })
-    //         ->select('rating', DB::raw('COUNT(*) as count'))
-    //         ->groupBy('rating')
-    //         ->orderBy('rating')
-    //         ->get();
+    private function getReviewRatingsData($sellerId)
+    {
+        $ratingsData = Review::whereHas('product', function ($query) use ($sellerId) {
+                $query->where('user_id', $sellerId);
+            })
+            ->select('rating', DB::raw('COUNT(*) as count'))
+            ->groupBy('rating')
+            ->orderBy('rating')
+            ->get();
         
-    //     $data = array_fill(0, 5, 0); // Initialize with zeros for ratings 1-5
+        $data = array_fill(0, 5, 0); // Initialize with zeros for ratings 1-5
         
-    //     foreach ($ratingsData as $rating) {
-    //         if ($rating->rating >= 1 && $rating->rating <= 5) {
-    //             $data[$rating->rating - 1] = $rating->count;
-    //         }
-    //     }
+        foreach ($ratingsData as $rating) {
+            if ($rating->rating >= 1 && $rating->rating <= 5) {
+                $data[$rating->rating - 1] = $rating->count;
+            }
+        }
         
-    //     return [
-    //         'labels' => ['1 ★', '2 ★', '3 ★', '4 ★', '5 ★'],
-    //         'data' => $data
-    //     ];
-    // }
+        return [
+            'labels' => ['1 ★', '2 ★', '3 ★', '4 ★', '5 ★'],
+            'data' => $data
+        ];
+    }
 }

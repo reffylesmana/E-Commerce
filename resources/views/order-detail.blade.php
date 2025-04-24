@@ -465,7 +465,7 @@
                                                     Pesanan Dalam Pengiriman</h3>
                                                 <div class="mt-2 text-sm text-purple-700 dark:text-purple-300">
                                                     <p>Pesanan Anda sedang dalam perjalanan. Nomor resi: <span
-                                                            class="font-medium">{{ $order->shipping->tracking_number ?? 'Belum tersedia' }}</span>
+                                                            class="font-medium">{{ $order->shipping->no_resi ?? 'Belum tersedia' }}</span>
                                                     </p>
 
                                                     <div class="mt-4 flex items-center">
@@ -879,11 +879,11 @@
                                             <p class="text-gray-800 dark:text-white mt-1">
                                                 {{ ucfirst($order->shipping_method ?? 'Reguler') }}</p>
                                         </div>
-                                        @if ($order->shipping && $order->shipping->tracking_number)
+                                        @if ($order->shipping && $order->shipping->no_resi)
                                             <div>
                                                 <span class="text-gray-600 dark:text-gray-400">Nomor Resi:</span>
                                                 <p class="text-gray-800 dark:text-white mt-1">
-                                                    {{ $order->shipping->tracking_number }}</p>
+                                                    {{ $order->shipping->no_resi }}</p>
                                             </div>
                                         @endif
                                     </div>

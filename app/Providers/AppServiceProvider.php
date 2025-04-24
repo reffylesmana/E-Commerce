@@ -22,5 +22,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Category::observe(CategoryObserver::class);
+        $locale = session('applocale', config('app.locale'));
+        app()->setLocale($locale);
     }
 }

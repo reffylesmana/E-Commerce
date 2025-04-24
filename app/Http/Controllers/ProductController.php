@@ -7,6 +7,8 @@ use App\Http\Requests\UpdateProductRequest;
 use App\Models\Wishlist;
 use App\Models\Cart;
 use App\Models\Category;
+use App\Models\Review;
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductPhoto;
 use App\Models\Store;
@@ -27,15 +29,18 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Product::with(['photos', 'category'])->where('is_active', true);
-
+        $query = Product::with(['photos', 'category', 'reviews'])
+                        ->where('is_active', true);
+    
         $this->applyFilters($request, $query);
         $this->applySorting($request, $query);
-
+    
+        $products = $query->paginate(12);
+    
         return view('index', [
             'title' => 'Katalog Produk',
             'categories' => Category::all(),
-            'products' => $query->paginate(12),
+            'products' => $products,
             'carts' => $this->getUserCarts(),
             'selectedCategory' => $request->category,
             'searchQuery' => $request->search,
@@ -48,10 +53,11 @@ class ProductController extends Controller
      */
     public function allProducts(Request $request)
     {
-        $query = Product::with(['photos', 'category'])->where('is_active', true);
+        $query = Product::with(['photos', 'category'])->where('is_active', true)->withAvg('reviews', 'rating');
 
         $this->applyFilters($request, $query);
         $this->applySorting($request, $query);
+        
 
         return view('products', [
             'title' => 'Semua Produk',
@@ -71,19 +77,34 @@ class ProductController extends Controller
     {
         $product = Product::where('slug', $slug)->firstOrFail();
         $product->increment('views');
-
+    
+        $reviews = Review::with(['user'])->where('product_id', $product->id)->latest()->get();
+    
+        $averageRating = $reviews->avg('rating'); 
+        $averageRating = $averageRating ? $averageRating : 0; 
+    
         $category = Category::findOrFail($product->category_id);
         $store = Store::findOrFail($product->store_id);
         $photos = ProductPhoto::where('product_id', $product->id)->get();
-
-        $relatedProducts = Product::where('category_id', $product->category_id)->where('id', '!=', $product->id)->where('is_active', true)->limit(4)->get();
-
+    
+        // Ambil produk terkait
+        $relatedProducts = Product::where('category_id', $product->category_id)
+            ->where('id', '!=', $product->id)
+            ->where('is_active', true)
+            ->limit(4)
+            ->get();
+    
         foreach ($relatedProducts as $relatedProduct) {
             $relatedProduct->photos = ProductPhoto::where('product_id', $relatedProduct->id)->get();
+            $relatedProduct->averageRating = Review::where('product_id', $relatedProduct->id)->avg('rating');
+            // Set default to 0 if no ratings
+            $relatedProduct->averageRating = $relatedProduct->averageRating ? $relatedProduct->averageRating : 0;
         }
-
-        return view('show', compact('product', 'category', 'store', 'photos', 'relatedProducts'));
+    
+        return view('show', compact('product', 'category', 'store', 'photos', 'relatedProducts', 'reviews', 'averageRating'));
     }
+    
+    
 
     /**
      * Display a listing of products for the seller.
@@ -92,20 +113,39 @@ class ProductController extends Controller
     {
         $user = Auth::user();
         $store = $user->store;
-
+    
         abort_unless($store, 403, 'Anda belum memiliki toko');
-
-        $products = $store
-            ->products()
-            ->with(['category', 'photos'])
-            ->get();
-
+    
+        // Ambil semua produk dari toko
+        $products = $store->products()->with(['category', 'photos'])->get();
+    
+        // Ambil semua order yang statusnya completed
+        $completedOrders = Order::where('status', 'completed')->with('products')->get();
+    
+        // Hitung jumlah produk terjual
+        $soldCounts = [];
+        foreach ($completedOrders as $order) {
+            foreach ($order->products as $orderItem) {
+                $productId = $orderItem->product_id; // Ambil ID produk dari order_item
+                if (isset($soldCounts[$productId])) {
+                    $soldCounts[$productId] += $orderItem->quantity; // Tambahkan quantity
+                } else {
+                    $soldCounts[$productId] = $orderItem->quantity; // Inisialisasi quantity
+                }
+            }
+        }
+    
+        // Tambahkan jumlah terjual ke setiap produk
+        foreach ($products as $product) {
+            $product->sold = $soldCounts[$product->id] ?? 0; // Jika tidak ada, set ke 0
+        }
+    
         $stats = [
             'total' => $products->count(),
             'active' => $products->where('is_active', true)->count(),
             'low_stock' => $products->where('stock', '<=', 5)->where('stock', '>', 0)->count(),
         ];
-
+    
         return view('seller.products.index', [
             'store' => $store,
             'categories' => Category::all(),
@@ -185,8 +225,10 @@ class ProductController extends Controller
         // Temukan toko berdasarkan slug
         $store = Store::where('slug', $slug)->firstOrFail();
 
-        // Ambil produk dari toko
-        $products = $store->products()->with('category')->where('is_active', true)->paginate(12);
+        $products = $store->products()
+            ->with('category', 'reviews') 
+            ->where('is_active', true)
+            ->paginate(12);
 
         return view('store', [
             'store' => $store,
@@ -199,13 +241,9 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-        if (Auth::user()->store->id !== $product->store_id) {
-            abort(403, 'Akses ditolak');
-        }
-
         $store = $product->store;
         $categories = $store->categories;
-
+    
         return view('seller.products.edit', [
             'product' => $product->load('photos'),
             'categories' => $categories,
@@ -268,7 +306,14 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-        $this->authorize('delete', $product);
+        // Autorisasi manual
+        $user = Auth::user();
+        $store = $user->store;
+        
+        // Cek kepemilikan toko
+        if (!$store || $store->id !== $product->store_id) {
+            abort(403, 'This action is unauthorized.');
+        }
 
         try {
             $this->deleteProductImages($product);
@@ -288,7 +333,7 @@ class ProductController extends Controller
     public function uploadTempImage(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'file' => 'required|image|mimes:jpeg,png,jpg,gif|max:5120',
+            'file' => 'required|image|max:5120',
         ]);
 
         if ($validator->fails()) {
@@ -367,7 +412,13 @@ class ProductController extends Controller
     {
         try {
             $image = ProductPhoto::findOrFail($imageId);
-            $this->authorize('update', $image->product);
+            $user = Auth::user();
+            $store = $user->store;
+            
+            // Cek kepemilikan toko
+            if (!$store || $store->id !== $image->product->store_id) {
+                abort(403, 'This action is unauthorized.');
+            }
 
             Storage::disk('public')->delete($image->photo);
             $image->delete();

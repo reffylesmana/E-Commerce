@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Address;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class AddressController extends Controller
 {
@@ -24,110 +25,100 @@ class AddressController extends Controller
             'name' => 'required|string|max:255',
             'recipient_name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
-            'province' => 'required|string|max:255',
-            'city' => 'required|string|max:255',
-            'district' => 'required|string|max:255',
+            'full_address' => 'required|string|max:500',
+            'city' => 'required|string|max:100',
             'postal_code' => 'required|string|max:10',
-            'full_address' => 'required|string',
-            'address_type' => 'required|in:home,office,other',
+            'is_default' => 'nullable|boolean',
         ]);
-
-        // Check if this is the first address (make it default)
-        $isDefault = !Address::where('user_id', Auth::id())->exists();
-
-        // If user is setting this as default, unset all other defaults
-        if ($request->has('is_default') && $request->is_default) {
-            Address::where('user_id', Auth::id())
-                ->update(['is_default' => false]);
-            $isDefault = true;
+    
+        DB::beginTransaction();
+    
+        try {
+            if ($request->is_default) {
+                Address::where('user_id', Auth::id())->update(['is_default' => false]);
+            }
+    
+            $address = Address::create([
+                'user_id' => Auth::id(),
+                'name' => $request->name,
+                'recipient_name' => $request->recipient_name,
+                'phone' => $request->phone,
+                'full_address' => $request->full_address,
+                'city' => $request->city,
+                'postal_code' => $request->postal_code,
+                'is_default' => $request->is_default ?? false,
+            ]);
+    
+            DB::commit();
+    
+            return response()->json(['success' => true, 'message' => 'Alamat berhasil disimpan.']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['success' => false, 'message' => 'Terjadi kesalahan saat menyimpan alamat: ' . $e->getMessage()]);
         }
-
-        Address::create([
-            'user_id' => Auth::id(),
-            'name' => $request->name,
-            'recipient_name' => $request->recipient_name,
-            'phone' => $request->phone,
-            'province' => $request->province,
-            'city' => $request->city,
-            'district' => $request->district,
-            'postal_code' => $request->postal_code,
-            'full_address' => $request->full_address,
-            'is_default' => $isDefault,
-            'address_type' => $request->address_type,
-        ]);
-
-        return redirect()->route('addresses.index')
-            ->with('success', 'Alamat berhasil ditambahkan.');
     }
-
-    public function update(Request $request, Address $address)
+    
+    public function update(Request $request, $id)
     {
-        // Check if address belongs to user
-        if ($address->user_id !== Auth::id()) {
-            return redirect()->route('addresses.index')
-                ->with('error', 'Anda tidak memiliki akses untuk mengedit alamat ini.');
-        }
-
         $request->validate([
             'name' => 'required|string|max:255',
             'recipient_name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
-            'province' => 'required|string|max:255',
-            'city' => 'required|string|max:255',
-            'district' => 'required|string|max:255',
+            'full_address' => 'required|string|max:500',
+            'city' => 'required|string|max:100',
             'postal_code' => 'required|string|max:10',
-            'full_address' => 'required|string',
-            'address_type' => 'required|in:home,office,other',
+            'is_default' => 'nullable|boolean',
         ]);
-
-        // If user is setting this as default, unset all other defaults
-        if ($request->has('is_default') && $request->is_default) {
-            Address::where('user_id', Auth::id())
-                ->where('id', '!=', $address->id)
-                ->update(['is_default' => false]);
-            $address->is_default = true;
-        }
-
-        $address->update([
-            'name' => $request->name,
-            'recipient_name' => $request->recipient_name,
-            'phone' => $request->phone,
-            'province' => $request->province,
-            'city' => $request->city,
-            'district' => $request->district,
-            'postal_code' => $request->postal_code,
-            'full_address' => $request->full_address,
-            'address_type' => $request->address_type,
-        ]);
-
-        return redirect()->route('addresses.index')
-            ->with('success', 'Alamat berhasil diperbarui.');
-    }
-
-    public function destroy(Address $address)
-    {
-        // Check if address belongs to user
-        if ($address->user_id !== Auth::id()) {
-            return redirect()->route('addresses.index')
-                ->with('error', 'Anda tidak memiliki akses untuk menghapus alamat ini.');
-        }
-
-        // If deleting default address, set another as default if available
-        if ($address->is_default) {
-            $newDefault = Address::where('user_id', Auth::id())
-                ->where('id', '!=', $address->id)
-                ->first();
-            
-            if ($newDefault) {
-                $newDefault->is_default = true;
-                $newDefault->save();
+    
+        DB::beginTransaction();
+    
+        try {
+            if ($request->is_default) {
+                Address::where('user_id', Auth::id())->update(['is_default' => false]);
             }
+    
+            $address = Address::findOrFail($id);
+            $address->update([
+                'name' => $request->name,
+                'recipient_name' => $request->recipient_name,
+                'phone' => $request->phone,
+                'full_address' => $request->full_address,
+                'city' => $request->city,
+                'postal_code' => $request->postal_code,
+                'is_default' => $request->is_default ?? false,
+            ]);
+    
+            DB::commit();
+    
+            return response()->json(['success' => true, 'message' => 'Alamat berhasil diperbarui.']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['success' => false, 'message' => 'Terjadi kesalahan saat memperbarui alamat: ' . $e->getMessage()]);
         }
-
+    }
+    
+    public function destroy($id)
+    {
+        $address = Address::where('id', $id)->where('user_id', Auth::id())->first();
+    
+        if (!$address) {
+            return response()->json(['success' => false, 'message' => 'Alamat tidak ditemukan.']);
+        }
+    
         $address->delete();
-
-        return redirect()->route('addresses.index')
-            ->with('success', 'Alamat berhasil dihapus.');
+    
+        return response()->json(['success' => true, 'message' => 'Alamat berhasil dihapus.']);
+    }
+    
+    public function show($id)
+    {
+        $address = Address::where('id', $id)->where('user_id', Auth::id())->first();
+    
+        if (!$address) {
+            return response()->json(['success' => false, 'message' => 'Alamat tidak ditemukan.']);
+        }
+    
+        return response()->json($address);
     }
 
     public function setDefault(Address $address)

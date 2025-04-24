@@ -13,6 +13,8 @@
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
     <!-- Styles -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
@@ -47,7 +49,7 @@
             @endphp
 
             <nav class="hidden lg:flex items-center space-x-6">
-                <input type="search" placeholder="Search products..."
+                <input type="search" placeholder="{{ __('messages.search_products') }}"
                     class="px-4 py-2 rounded-full bg-white bg-opacity-20 text-white placeholder-gray-200 focus:outline-none focus:ring-2 focus:ring-white">
                 @foreach ($randomCategories as $category)
                     <a href="{{ route('products.index') }}?sort=latest&category={{ $category->id }}"
@@ -66,10 +68,18 @@
                     </svg>
                 </button>
 
+                <!-- Language Selector -->
+                {{-- <div class="flex items-center space-x-2">
+                    <a href="{{ route('set.language', 'id') }}" class="hover:underline">ID</a>
+                    <span>|</span>
+                    <a href="{{ route('set.language', 'en') }}" class="hover:underline">EN</a>
+                </div> --}}
+
                 <!-- Notifications icon (desktop only) -->
                 @if (Auth::check())
                     <div class="relative">
-                        <button id="notification-button" class="focus:outline-none focus:ring-2 focus:ring-white rounded-full p-1 relative">
+                        <button id="notification-button"
+                            class="focus:outline-none focus:ring-2 focus:ring-white rounded-full p-1 relative">
                             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
@@ -85,50 +95,75 @@
                                 </span>
                             @endif
                         </button>
-                        
+
                         <!-- Notification Dropdown -->
-                        <div id="notification-dropdown" class="hidden absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden z-50">
-                            <div class="p-3 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600 flex justify-between items-center">
+                        <div id="notification-dropdown"
+                            class="hidden absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden z-50">
+                            <div
+                                class="p-3 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600 flex justify-between items-center">
                                 <h3 class="font-medium text-gray-700 dark:text-gray-300">Notifikasi</h3>
-                                <a href="{{ route('notifications.index') }}" class="text-xs text-blue-600 dark:text-blue-400 hover:underline">Lihat Semua</a>
+                                <a href="{{ route('notifications.index') }}"
+                                    class="text-xs text-blue-600 dark:text-blue-400 hover:underline">Lihat Semua</a>
                             </div>
-                            
+
                             <div class="max-h-96 overflow-y-auto">
-                                @if(Auth::user()->notifications->count() > 0)
-                                    @foreach(Auth::user()->notifications->take(5) as $notification)
-                                        <a href="{{ $notification->data['action_url'] ?? route('notifications.index') }}" 
-                                           class="block p-4 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 {{ $notification->read_at ? '' : 'bg-blue-50 dark:bg-blue-900/10' }}">
+                                @if (Auth::user()->notifications->count() > 0)
+                                    @foreach (Auth::user()->notifications->take(5) as $notification)
+                                        <a href="{{ $notification->data['action_url'] ?? route('notifications.index') }}"
+                                            class="block p-4 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 {{ $notification->read_at ? '' : 'bg-blue-50 dark:bg-blue-900/10' }}">
                                             <div class="flex">
-                                                @if(isset($notification->data['type']) && $notification->data['type'] == 'order')
-                                                    <div class="flex-shrink-0 bg-blue-100 dark:bg-blue-900/30 rounded-full p-2 mr-3">
-                                                        <svg class="h-5 w-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                                                @if (isset($notification->data['type']) && $notification->data['type'] == 'order')
+                                                    <div
+                                                        class="flex-shrink-0 bg-blue-100 dark:bg-blue-900/30 rounded-full p-2 mr-3">
+                                                        <svg class="h-5 w-5 text-blue-600 dark:text-blue-400"
+                                                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
                                                         </svg>
                                                     </div>
                                                 @elseif(isset($notification->data['type']) && $notification->data['type'] == 'shipping')
-                                                    <div class="flex-shrink-0 bg-purple-100 dark:bg-purple-900/30 rounded-full p-2 mr-3">
-                                                        <svg class="h-5 w-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                    <div
+                                                        class="flex-shrink-0 bg-purple-100 dark:bg-purple-900/30 rounded-full p-2 mr-3">
+                                                        <svg class="h-5 w-5 text-purple-600 dark:text-purple-400"
+                                                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                                                            </path>
                                                         </svg>
                                                     </div>
                                                 @elseif(isset($notification->data['type']) && $notification->data['type'] == 'promo')
-                                                    <div class="flex-shrink-0 bg-green-100 dark:bg-green-900/30 rounded-full p-2 mr-3">
-                                                        <svg class="h-5 w-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path>
+                                                    <div
+                                                        class="flex-shrink-0 bg-green-100 dark:bg-green-900/30 rounded-full p-2 mr-3">
+                                                        <svg class="h-5 w-5 text-green-600 dark:text-green-400"
+                                                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7">
+                                                            </path>
                                                         </svg>
                                                     </div>
                                                 @else
-                                                    <div class="flex-shrink-0 bg-gray-100 dark:bg-gray-700 rounded-full p-2 mr-3">
-                                                        <svg class="h-5 w-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                                                    <div
+                                                        class="flex-shrink-0 bg-gray-100 dark:bg-gray-700 rounded-full p-2 mr-3">
+                                                        <svg class="h-5 w-5 text-gray-600 dark:text-gray-400"
+                                                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
+                                                            </path>
                                                         </svg>
                                                     </div>
                                                 @endif
-                                                
+
                                                 <div>
-                                                    <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $notification->data['title'] ?? 'Notifikasi' }}</p>
-                                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ $notification->data['message'] ?? '' }}</p>
-                                                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
+                                                    <p class="text-sm font-medium text-gray-900 dark:text-white">
+                                                        {{ $notification->data['title'] ?? 'Notifikasi' }}</p>
+                                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                        {{ $notification->data['message'] ?? '' }}</p>
+                                                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                                                        {{ $notification->created_at->diffForHumans() }}</p>
                                                 </div>
                                             </div>
                                         </a>
@@ -142,7 +177,7 @@
                         </div>
                     </div>
                 @endif
-                
+
                 <!-- Desktop icons -->
                 <a href="{{ route('account.index') }}"
                     class="hidden lg:block focus:outline-none focus:ring-2 focus:ring-white rounded-full p-1">
@@ -211,7 +246,7 @@
             </a>
 
             <!-- Produk (Products) -->
-            <a href="#" class="flex flex-col items-center" onclick="toggleProductsMenu(); return false;">
+            <a href="/products" class="flex flex-col items-center" onclick="toggleProductsMenu(); return false;">
                 <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>
@@ -271,11 +306,12 @@
                 <h3 class="font-semibold text-gray-800">Notifications</h3>
                 <button onclick="toggleMobileNotifications()" class="text-gray-500">
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 </button>
             </div>
-            
+
             <div class="divide-y">
                 @if (Auth::check() && Auth::user()->notifications->count() > 0)
                     @foreach (Auth::user()->notifications as $notification)
@@ -283,43 +319,58 @@
                             <div class="flex">
                                 @if ($notification->type == 'App\Notifications\OrderStatusChanged')
                                     <div class="flex-shrink-0 bg-blue-100 rounded-full p-2 mr-3">
-                                        <svg class="h-5 w-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                                        <svg class="h-5 w-5 text-blue-500" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
                                         </svg>
                                     </div>
                                 @elseif ($notification->type == 'App\Notifications\ShippingUpdate')
                                     <div class="flex-shrink-0 bg-green-100 rounded-full p-2 mr-3">
-                                        <svg class="h-5 w-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"></path>
+                                        <svg class="h-5 w-5 text-green-500" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8">
+                                            </path>
                                         </svg>
                                     </div>
                                 @elseif ($notification->type == 'App\Notifications\NewPromotion')
                                     <div class="flex-shrink-0 bg-yellow-100 rounded-full p-2 mr-3">
-                                        <svg class="h-5 w-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path>
+                                        <svg class="h-5 w-5 text-yellow-500" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z">
+                                            </path>
                                         </svg>
                                     </div>
                                 @else
                                     <div class="flex-shrink-0 bg-gray-100 rounded-full p-2 mr-3">
-                                        <svg class="h-5 w-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        <svg class="h-5 w-5 text-gray-500" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                         </svg>
                                     </div>
                                 @endif
-                                
+
                                 <div class="flex-1">
-                                    <a href="#" onclick="markAsRead('{{ $notification->id }}', '{{ $notification->data['url'] ?? '#' }}'); return false;">
-                                        <p class="text-sm font-medium text-gray-900">{{ $notification->data['title'] ?? 'Notification' }}</p>
-                                        <p class="text-sm text-gray-500 mt-1">{{ $notification->data['message'] ?? '' }}</p>
-                                        <p class="text-xs text-gray-400 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
+                                    <a href="#"
+                                        onclick="markAsRead('{{ $notification->id }}', '{{ $notification->data['url'] ?? '#' }}'); return false;">
+                                        <p class="text-sm font-medium text-gray-900">
+                                            {{ $notification->data['title'] ?? 'Notification' }}</p>
+                                        <p class="text-sm text-gray-500 mt-1">
+                                            {{ $notification->data['message'] ?? '' }}</p>
+                                        <p class="text-xs text-gray-400 mt-1">
+                                            {{ $notification->created_at->diffForHumans() }}</p>
                                     </a>
                                 </div>
                             </div>
                         </div>
                     @endforeach
-                    
+
                     <div class="p-4 text-center">
-                        <a href="{{ route('notifications.index') }}" class="text-blue-600 hover:text-blue-800">View All Notifications</a>
+                        <a href="{{ route('notifications.index') }}" class="text-blue-600 hover:text-blue-800">View
+                            All Notifications</a>
                     </div>
                 @else
                     <div class="p-8 text-center text-gray-500">
@@ -334,10 +385,13 @@
 
     <!-- Midtrans JS -->
     <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}">
+        < script src = "https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js" >
+    </script>
     </script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+
             // Handle payment buttons
             const payButtons = document.querySelectorAll('.pay-button');
 
@@ -404,27 +458,156 @@
 
                             alert(
                                 'Terjadi kesalahan saat memproses pembayaran. Silakan coba lagi nanti.'
-                                );
+                            );
                         });
                 });
             });
         });
+        flash messages
+        initSweetAlert();
+        // Function to initialize SweetAlert based on session data
+        function initSweetAlert() {
+            @if (session('sweet_alert'))
+                const alertData = @json(session('sweet_alert'));
+                Swal.fire({
+                    icon: alertData.icon || 'info',
+                    title: alertData.title || '',
+                    text: alertData.text || '',
+                    toast: alertData.toast || false,
+                    position: alertData.position || 'center',
+                    showConfirmButton: alertData.showConfirmButton !== undefined ? alertData.showConfirmButton :
+                        true,
+                    confirmButtonText: alertData.confirmButtonText || 'OK',
+                    confirmButtonColor: alertData.confirmButtonColor || '#3085d6',
+                    timer: alertData.timer || null,
+                    timerProgressBar: alertData.timerProgressBar || false,
+                    showCancelButton: alertData.showCancelButton || false,
+                    cancelButtonText: alertData.cancelButtonText || 'Cancel',
+                    cancelButtonColor: alertData.cancelButtonColor || '#d33',
+                    footer: alertData.footer || '',
+                    customClass: alertData.customClass || {},
+                    backdrop: alertData.backdrop !== undefined ? alertData.backdrop : true,
+                    allowOutsideClick: alertData.allowOutsideClick !== undefined ? alertData.allowOutsideClick :
+                        true
+                }).then((result) => {
+                    if (result.isConfirmed && alertData.confirmCallback) {
+                        window.location.href = alertData.confirmCallback;
+                    } else if (result.isDismissed && alertData.cancelCallback && result.dismiss === Swal
+                        .DismissReason.cancel) {
+                        window.location.href = alertData.cancelCallback;
+                    }
+                });
+            @endif
+
+            // Legacy support for old flash message format
+            @if (session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: "{{ session('success') }}",
+                    timer: 3000,
+                    timerProgressBar: true,
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false
+                });
+            @endif
+
+            @if (session('error'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: "{{ session('error') }}",
+                    timer: 3000,
+                    timerProgressBar: true,
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false
+                });
+            @endif
+
+            @if (session('warning'))
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Peringatan',
+                    text: "{{ session('warning') }}",
+                    timer: 3000,
+                    timerProgressBar: true,
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false
+                });
+            @endif
+
+            @if (session('info'))
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Informasi',
+                    text: "{{ session('info') }}",
+                    timer: 3000,
+                    timerProgressBar: true,
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false
+                });
+            @endif
+        }
+
+        // Function to show SweetAlert programmatically
+        function showAlert(options) {
+            Swal.fire(options);
+        }
+
+        // Function to show a confirmation dialog
+        function confirmAction(event, options) {
+            event.preventDefault();
+            const form = event.target.closest('form');
+
+            Swal.fire({
+                title: options.title || 'Apakah Anda yakin?',
+                text: options.text || "Tindakan ini tidak dapat dibatalkan!",
+                icon: options.icon || 'warning',
+                showCancelButton: true,
+                confirmButtonColor: options.confirmButtonColor || '#3085d6',
+                cancelButtonColor: options.cancelButtonColor || '#d33',
+                confirmButtonText: options.confirmButtonText || 'Ya, lanjutkan!',
+                cancelButtonText: options.cancelButtonText || 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    if (form) {
+                        form.submit();
+                    } else if (options.confirmCallback) {
+                        if (typeof options.confirmCallback === 'function') {
+                            options.confirmCallback();
+                        } else if (typeof options.confirmCallback === 'string') {
+                            window.location.href = options.confirmCallback;
+                        }
+                    }
+                } else if (result.isDismissed && options.cancelCallback) {
+                    if (typeof options.cancelCallback === 'function') {
+                        options.cancelCallback();
+                    } else if (typeof options.cancelCallback === 'string') {
+                        window.location.href = options.cancelCallback;
+                    }
+                }
+            });
+        }
     </script>
 
     <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
     <script>
-    function toggleDarkMode() {
-        const html = document.documentElement; // Mengambil elemen <html>
-        html.classList.toggle('dark'); // Menambahkan atau menghapus kelas 'dark'
-        const isDark = html.classList.contains('dark');
-        localStorage.setItem('darkMode', isDark); // Menyimpan preferensi pengguna di localStorage
-    }
-    
-    // Inisialisasi dark mode dari localStorage saat halaman dimuat
-    document.addEventListener('DOMContentLoaded', () => {
-        const darkMode = localStorage.getItem('darkMode') === 'true';
-        document.documentElement.classList.toggle('dark', darkMode);
-    });
+        function toggleDarkMode() {
+            const html = document.documentElement; // Mengambil elemen <html>
+            html.classList.toggle('dark'); // Menambahkan atau menghapus kelas 'dark'
+            const isDark = html.classList.contains('dark');
+            localStorage.setItem('darkMode', isDark); // Menyimpan preferensi pengguna di localStorage
+        }
+
+        // Inisialisasi dark mode dari localStorage saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', () => {
+            const darkMode = localStorage.getItem('darkMode') === 'true';
+            document.documentElement.classList.toggle('dark', darkMode);
+        });
     </script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -573,7 +756,8 @@
                 .then(data => {
                     // Update notification count if needed
                     if (data.success && data.count) {
-                        const countElements = document.querySelectorAll('.notification-count, .notification-count-mobile');
+                        const countElements = document.querySelectorAll(
+                            '.notification-count, .notification-count-mobile');
                         countElements.forEach(el => {
                             el.textContent = data.count;
                             el.classList.remove('hidden');
@@ -605,7 +789,7 @@
         function toggleNotificationDropdown() {
             const dropdown = document.getElementById('notificationDropdown');
             dropdown.classList.toggle('hidden');
-            
+
             // Close dropdown when clicking outside
             if (!dropdown.classList.contains('hidden')) {
                 document.addEventListener('click', closeNotificationDropdown);
@@ -613,22 +797,22 @@
                 document.removeEventListener('click', closeNotificationDropdown);
             }
         }
-        
+
         function closeNotificationDropdown(event) {
             const dropdown = document.getElementById('notificationDropdown');
             const button = document.querySelector('button[onclick="toggleNotificationDropdown()"]');
-            
+
             if (!dropdown.contains(event.target) && !button.contains(event.target)) {
                 dropdown.classList.add('hidden');
                 document.removeEventListener('click', closeNotificationDropdown);
             }
         }
-        
+
         // Toggle mobile notifications panel
         function toggleMobileNotifications() {
             const panel = document.getElementById('mobileNotificationsPanel');
             panel.classList.toggle('hidden');
-            
+
             // Prevent scrolling on body when panel is open
             if (!panel.classList.contains('hidden')) {
                 document.body.style.overflow = 'hidden';
@@ -636,63 +820,65 @@
                 document.body.style.overflow = '';
             }
         }
-        
+
         // Mark notification as read and redirect
         function markAsRead(id, url) {
             fetch(`/notifications/${id}/read`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Update notification count
-                    const countElements = document.querySelectorAll('.notification-count, .notification-count-mobile');
-                    countElements.forEach(el => {
-                        const newCount = parseInt(el.textContent) - 1;
-                        if (newCount <= 0) {
-                            el.classList.add('hidden');
-                        } else {
-                            el.textContent = newCount;
-                        }
-                    });
-                    
-                    // Redirect to URL
-                    window.location.href = url;
-                }
-            })
-            .catch(error => console.error('Error marking notification as read:', error));
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update notification count
+                        const countElements = document.querySelectorAll(
+                            '.notification-count, .notification-count-mobile');
+                        countElements.forEach(el => {
+                            const newCount = parseInt(el.textContent) - 1;
+                            if (newCount <= 0) {
+                                el.classList.add('hidden');
+                            } else {
+                                el.textContent = newCount;
+                            }
+                        });
+
+                        // Redirect to URL
+                        window.location.href = url;
+                    }
+                })
+                .catch(error => console.error('Error marking notification as read:', error));
         }
-        
+
         // Mark all notifications as read
         function markAllAsRead() {
             fetch('/notifications/read-all', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Hide all notification count badges
-                    const countElements = document.querySelectorAll('.notification-count, .notification-count-mobile');
-                    countElements.forEach(el => {
-                        el.classList.add('hidden');
-                    });
-                    
-                    // Mark all notification items as read (remove blue background)
-                    const notificationItems = document.querySelectorAll('.notification-item');
-                    notificationItems.forEach(item => {
-                        item.classList.remove('bg-blue-50');
-                    });
-                }
-            })
-            .catch(error => console.error('Error marking all notifications as read:', error));
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Hide all notification count badges
+                        const countElements = document.querySelectorAll(
+                            '.notification-count, .notification-count-mobile');
+                        countElements.forEach(el => {
+                            el.classList.add('hidden');
+                        });
+
+                        // Mark all notification items as read (remove blue background)
+                        const notificationItems = document.querySelectorAll('.notification-item');
+                        notificationItems.forEach(item => {
+                            item.classList.remove('bg-blue-50');
+                        });
+                    }
+                })
+                .catch(error => console.error('Error marking all notifications as read:', error));
         }
 
         // Function to confirm delete actions
@@ -749,46 +935,48 @@
             }
         }
     </script>
-    
+
     <script>
-    // Toggle notification dropdown
-    document.addEventListener('DOMContentLoaded', function() {
-        const notificationButton = document.getElementById('notification-button');
-        const notificationDropdown = document.getElementById('notification-dropdown');
-        
-        if (notificationButton && notificationDropdown) {
-            notificationButton.addEventListener('click', function() {
-                notificationDropdown.classList.toggle('hidden');
-                
-                // Mark notifications as read when dropdown is opened
-                if (!notificationDropdown.classList.contains('hidden')) {
-                    fetch('/notifications/mark-all-read', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        }
-                    })
-                    .then(response => {
-                        // Hide notification badge
-                        const badge = document.getElementById('notification-badge');
-                        if (badge) {
-                            badge.classList.add('hidden');
-                        }
-                    })
-                    .catch(error => console.error('Error marking notifications as read:', error));
-                }
-            });
-            
-            // Close dropdown when clicking outside
-            document.addEventListener('click', function(event) {
-                if (!notificationButton.contains(event.target) && !notificationDropdown.contains(event.target)) {
-                    notificationDropdown.classList.add('hidden');
-                }
-            });
-        }
-    });
-</script>
+        // Toggle notification dropdown
+        document.addEventListener('DOMContentLoaded', function() {
+            const notificationButton = document.getElementById('notification-button');
+            const notificationDropdown = document.getElementById('notification-dropdown');
+
+            if (notificationButton && notificationDropdown) {
+                notificationButton.addEventListener('click', function() {
+                    notificationDropdown.classList.toggle('hidden');
+
+                    // Mark notifications as read when dropdown is opened
+                    if (!notificationDropdown.classList.contains('hidden')) {
+                        fetch('/notifications/mark-all-read', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                        .getAttribute('content')
+                                }
+                            })
+                            .then(response => {
+                                // Hide notification badge
+                                const badge = document.getElementById('notification-badge');
+                                if (badge) {
+                                    badge.classList.add('hidden');
+                                }
+                            })
+                            .catch(error => console.error('Error marking notifications as read:', error));
+                    }
+                });
+
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!notificationButton.contains(event.target) && !notificationDropdown.contains(event
+                            .target)) {
+                        notificationDropdown.classList.add('hidden');
+                    }
+                });
+            }
+        });
+    </script>
     @stack('scripts')
 </body>
 

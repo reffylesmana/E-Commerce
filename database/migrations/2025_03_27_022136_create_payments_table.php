@@ -28,8 +28,9 @@ return new class extends Migration
                 'success', 
                 'failed', 
                 'expired', 
+                'unpaid', 
                 'refunded'
-            ])->default('pending');
+            ])->default('unpaid');
             $table->json('payment_details')->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();

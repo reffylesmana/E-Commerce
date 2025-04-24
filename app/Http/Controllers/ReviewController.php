@@ -8,19 +8,35 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Carbon\Carbon;
 
 class ReviewController extends Controller
 {
     /**
+     * Display a listing of the user's reviews.
+     */
+    public function index()
+    {
+        $reviews = Review::with(['product.photos', 'order'])
+            ->where('user_id', Auth::id())
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        foreach ($reviews as $review) {
+            $review->images = json_decode($review->images, true); 
+        }
+            
+        return view('reviews.index', compact('reviews'));
+    }
+
+    /**
      * Show the form for creating a new review.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\View\View
      */
     public function create(Request $request)
     {
-        $order = Order::with(['orderItems.product'])
+        $order = Order::with(['orderItems.product.photos'])
             ->where('user_id', Auth::id())
             ->where('id', $request->order_id)
             ->where('status', 'completed')
@@ -41,18 +57,15 @@ class ReviewController extends Controller
         }
         
         if ($allReviewed) {
-            return redirect()->route('orders.completed')
-                ->with('error', 'Anda sudah memberikan penilaian untuk semua produk dalam pesanan ini.');
+            return redirect()->route('reviews.index')
+                ->with('info', 'Anda sudah memberikan penilaian untuk semua produk dalam pesanan ini.');
         }
         
-        return view('create-review', compact('order'));
+        return view('reviews.create', compact('order'));
     }
 
     /**
      * Store a newly created review in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
      */
     public function store(Request $request)
     {
@@ -80,7 +93,7 @@ class ReviewController extends Controller
                 ->first();
                 
             if ($existingReview) {
-                continue; // Skip if review already exists
+                continue;
             }
             
             // Create new review
@@ -101,23 +114,146 @@ class ReviewController extends Controller
                 
                 foreach ($reviewData['images'] as $image) {
                     $imageName = 'review_' . $review->id . '_' . time() . '_' . uniqid() . '.' . $image->extension();
-                    $image->storeAs('public/reviews', $imageName);
+                    $image->storeAs('reviews', $imageName, 'public');
                     $imageNames[] = $imageName;
                 }
                 
-                $review->images = $imageNames;
+                $review->images = json_encode($imageNames);
                 $review->save();
             }
             
-            // Update product rating
-            $product = Product::find($reviewData['product_id']);
-            $productReviews = Review::where('product_id', $product->id)->get();
-            $avgRating = $productReviews->avg('rating');
-            $product->rating = $avgRating;
-            $product->save();
+            // Create notification for seller
+            $product = Product::find($review->product_id);
+            if ($product && $product->user_id) {
+                DB::table('notifications')->insert([
+                    'id' => Str::uuid(),
+                    'type' => 'App\Notifications\NewReview',
+                    'notifiable_id' => $product->user_id,
+                    'notifiable_type' => 'App\Models\User',
+                    'data' => json_encode([
+                        'message' => 'Produk Anda "' . $product->name . '" menerima penilaian baru',
+                        'product_id' => $product->id,
+                        'review_id' => $review->id,
+                        'rating' => $review->rating,
+                        'buyer_id' => Auth::id(),
+                        'created_at' => now()->toDateTimeString()
+                    ]),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
         }
         
-        return redirect()->route('orders.completed')
+        return redirect()->route('reviews.index')
             ->with('success', 'Terima kasih! Penilaian Anda telah berhasil disimpan.');
+    }
+    
+    /**
+     * Show the form for editing the specified review.
+     */
+    public function edit($id)
+    {
+        $review = Review::with(['product.photos', 'order'])
+            ->where('id', $id)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+            
+        $review->images = json_decode($review->images, true) ?? [];
+            
+        return view('reviews.edit', compact('review'));
+    }
+    
+    /**
+     * Update the specified review in storage.
+     */
+    public function update(Request $request, $id)
+    {
+        $review = Review::where('id', $id)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+            
+        $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'comment' => 'required|string|min:5|max:1000',
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
+        
+        $review->rating = $request->rating;
+        $review->comment = $request->comment;
+        
+        // Handle images
+        $imageNames = json_decode($review->images, true) ?? [];
+        
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $imageName = 'review_' . $review->id . '_' . time() . '_' . uniqid() . '.' . $image->extension();
+                $image->storeAs('reviews', $imageName, 'public');
+                $imageNames[] = $imageName;
+            }
+        }
+        
+        $review->images = json_encode($imageNames);
+        $review->save();
+        
+        // Create notification for seller about updated review
+        $product = Product::find($review->product_id);
+        if ($product && $product->user_id) {
+            DB::table('notifications')->insert([
+                'id' => Str::uuid(),
+                'type' => 'App\Notifications\ReviewUpdated',
+                'notifiable_id' => $product->user_id,
+                'notifiable_type' => 'App\Models\User',
+                'data' => json_encode([
+                    'message' => 'Penilaian untuk produk "' . $product->name . '" telah diperbarui',
+                    'product_id' => $product->id,
+                    'review_id' => $review->id,
+                    'rating' => $review->rating,
+                    'buyer_id' => Auth::id(),
+                    'created_at' => now()->toDateTimeString()
+                ]),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+        
+        return redirect()->route('reviews.index')
+            ->with('success', 'Penilaian berhasil diperbarui.');
+    }
+    
+    /**
+     * Remove an image from a review.
+     */
+    public function removeImage(Request $request, $id)
+    {
+        $review = Review::where('id', $id)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+            
+        $request->validate([
+            'image' => 'required|string',
+        ]);
+        
+        $imageName = $request->image;
+        $images = json_decode($review->images, true) ?? [];
+        
+        if (in_array($imageName, $images)) {
+            // Remove from storage
+            Storage::disk('public')->delete('reviews/' . $imageName);
+            
+            // Remove from array
+            $images = array_diff($images, [$imageName]);
+            $review->images = json_encode(array_values($images));
+            $review->save();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Foto berhasil dihapus.'
+            ]);
+        }
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'Foto tidak ditemukan.'
+        ], 404);
     }
 }

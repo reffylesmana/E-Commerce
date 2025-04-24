@@ -4,32 +4,29 @@
 @section('description',
     'Discover the latest in technology with TechStore. Shop laptops, smartphones, accessories, and
     gaming gear.')
-
 @section('content')
     <!-- Hero Section -->
     <section class="relative overflow-hidden bg-gradient-to-r from-blue-600 to-purple-600 text-white">
         <div class="absolute inset-0 bg-black opacity-50"></div>
-        <div class="container mx-auto px-6 sm:px-10 relative z-10"> 
-            <div class="flex flex-col items-center justify-center h-full"> 
-                <!-- Centered Main Hero Content -->
+        <div class="container mx-auto px-6 sm:px-10 relative z-10">
+            <div class="flex flex-col items-center justify-center h-full">
                 <div class="text-center" data-aos="fade-up">
                     <h1 class="text-4xl sm:text-6xl font-extrabold mb-4 leading-tight animate-pulse">
-                        Discover the Future of Tech
+                        {{ __('messages.heading') }}
                     </h1>
                     <p class="text-xl sm:text-2xl mb-8 max-w-2xl mx-auto">
-                        Incredible deals on the latest gadgets that will transform your digital life
+                        {{ __('messages.subtext') }}
                     </p>
-                    <a href="javascript:void(0);" 
-                    onclick="checkLoginAndRedirect()" 
-                    class="inline-block bg-white text-blue-600 font-bold py-3 px-8 rounded-full hover:bg-blue-100 transition-colors duration-1000 transform hover:scale-105 animate-bounce">
-                    Shop Now
-                 </a>
+                    <a href="{{ route('products.index', ['lang' => app()->getLocale()]) }}" 
+                       class="inline-block bg-white text-blue-600 font-bold py-3 px-8 rounded-full hover:bg-blue-100 transition-colors duration-1000 transform hover:scale-105 animate-bounce">
+                        {{ __('messages.button') }}
+                    </a>
                 </div>
             </div>
         </div>
-        <div class="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-gray-50 dark:from-gray-900 to-transparent">
-        </div>
+        <div class="absolute top-full left-0 right-0 h-[100px] bg-gradient-to-r from-blue-600 to-purple-600"></div>
     </section>
+
 
     <!-- Banner Section -->
     <section class="py-8 bg-gray-50 dark:bg-gray-900">
@@ -38,23 +35,18 @@
                 <div id="banner-carousel" class="relative">
                     <div class="banner-container overflow-hidden">
                         <div class="banner-wrapper flex transition-transform duration-500 ease-in-out h-64">
-                            <!-- Banner Items -->
-                            <div class="banner-item min-w-full">
-                                <img src="{{ asset('images/banner1.jpg') }}" alt="Promo Banner 1"
-                                    class="w-full h-full object-cover">
-                            </div>
-                            <div class="banner-item min-w-full">
-                                <img src="{{ asset('images/banner2.jpg') }}" alt="Promo Banner 2"
-                                    class="w-full h-full object-cover">
-                            </div>
-                            <div class="banner-item min-w-full">
-                                <img src="{{ asset('images/banner3.jpg') }}" alt="Promo Banner 3"
-                                    class="w-full h-full object-cover">
-                            </div>
+                            @foreach ($banners as $banner)
+                                <div class="banner-item min-w-full">
+                                    <a href="{{ $banner->link_url ?? '#' }}">
+                                        <img src="{{ Storage::url($banner->image_path) }}" alt="{{ $banner->title }}"
+                                            class="w-full h-full object-cover">
+                                    </a>
+                                </div>
+                            @endforeach
                         </div>
                     </div>
 
-                    <!-- Navigation Arrows -->
+                    <!-- Tombol navigasi -->
                     <button id="banner-prev"
                         class="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 bg-white/70 rounded-full p-3 shadow-md hover:bg-white transition-all duration-300">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-800" fill="none"
@@ -72,22 +64,21 @@
 
                     <!-- Indicators -->
                     <div class="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
-                        <button
-                            class="banner-indicator w-3 h-3 rounded-full bg-white opacity-50 hover:opacity-100 transition-opacity duration-300 banner-indicator-active"></button>
-                        <button
-                            class="banner-indicator w-3 h-3 rounded-full bg-white opacity-50 hover:opacity-100 transition-opacity duration-300"></button>
-                        <button
-                            class="banner-indicator w-3 h-3 rounded-full bg-white opacity-50 hover:opacity-100 transition-opacity duration-300"></button>
+                        @foreach ($banners as $index => $banner)
+                            <button
+                                class="banner-indicator w-3 h-3 rounded-full bg-white opacity-50 hover:opacity-100 transition-opacity duration-300 {{ $index === 0 ? 'banner-indicator-active' : '' }}"></button>
+                        @endforeach
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
+
     <!-- Categories -->
     <section class="py-16 bg-gray-50 dark:bg-gray-800">
         <div class="container mx-auto px-6 sm:px-10">
-            <h2 class="text-3xl sm:text-4xl font-bold mb-12 text-center dark:text-white" data-aos="fade-up">Shop by Category
+            <h2 class="text-3xl sm:text-4xl font-bold mb-12 text-center dark:text-white" data-aos="fade-up">{{ __('messages.categories_heading') }}
             </h2>
 
             <div class="relative">
@@ -145,8 +136,8 @@
                 <!-- Right Navigation Arrow -->
                 <button id="nextBtn"
                     class="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-gray-700 rounded-full p-2 shadow-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 {{ $totalCategories <= 8 ? 'hidden' : '' }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600 dark:text-blue-400"
-                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600 dark:text-blue-400" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                     </svg>
                 </button>
@@ -162,52 +153,62 @@
     <!-- Featured Products -->
     <section class="py-16 bg-gray-50 dark:bg-gray-900">
         <div class="container mx-auto px-6 sm:px-10">
-            <h2 class="text-3xl sm:text-4xl font-bold mb-12 text-center dark:text-white" data-aos="fade-up">Featured
-                Products</h2>
+            <h2 class="text-3xl sm:text-4xl font-bold mb-12 text-center dark:text-white" data-aos="fade-up">
+                {{ __('messages.featured_heading') }}
+            </h2>
+    
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-8">
                 @foreach ($products as $index => $product)
-                    <div class="group bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden transform transition duration-300 hover:scale-105 hover:shadow-xl"
+                    <div class="group bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden transform transition duration-300 hover:scale-105 hover:shadow-xl h-full flex flex-col min-h-[360px] sm:min-h-[500px]"
                         data-aos="fade-up" data-aos-delay="{{ $index * 100 }}">
                         <a href="{{ route('show', $product->slug) }}" class="block h-full flex flex-col relative">
-                            <div class="relative aspect-w-1 aspect-h-1 overflow-hidden">
+                            <div class="relative aspect-[4/3] overflow-hidden">
                                 <img src="{{ asset('storage/' . $product->photos->first()->photo) }}"
                                     alt="{{ $product->name }}"
                                     class="w-full h-full object-cover transition duration-300 group-hover:scale-110">
-                                <div
-                                    class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition duration-300">
-                                </div>
+                                <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition duration-300"></div>
                             </div>
-                            <div class="p-3 sm:p-4 flex-grow flex flex-col relative z-10">
-                                <h3
-                                    class="font-semibold text-sm sm:text-lg mb-1 sm:mb-2 dark:text-white line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition duration-300">
-                                    {{ $product->name }}</h3>
+                            <div class="p-2 sm:p-4 flex-grow flex flex-col relative z-10">
+                                <h3 class="font-semibold text-xs sm:text-lg mb-1 sm:mb-2 dark:text-white line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition duration-300">
+                                    {{ $product->name }}
+                                </h3>
+    
                                 <div class="flex items-center mb-1 sm:mb-2">
                                     <div class="flex">
                                         @for ($star = 1; $star <= 5; $star++)
-                                            <svg class="h-3 w-3 sm:h-4 sm:w-4 {{ $star <= round($product->rating) ? 'text-yellow-400' : 'text-gray-300' }} fill-current"
-                                                viewBox="0 0 20 20">
+                                            <svg xmlns="http://www.w3.org/2000/svg"
+                                                class="w-4 h-4 sm:w-5 sm:h-5 {{ $star <= $product->averageRating() ? 'text-yellow-400' : 'text-gray-400' }}"
+                                                fill="currentColor" viewBox="0 0 24 24">
                                                 <path
-                                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                    d="M12 .587l3.668 7.571L24 9.748l-6 5.848 1.416 8.264L12 18.897l-7.416 4.963L6 15.596 0 9.748l8.332-1.59z" />
                                             </svg>
                                         @endfor
                                     </div>
-                                    <span
-                                        class="ml-1 text-gray-600 dark:text-gray-400 text-xs">({{ number_format($product->rating, 1) }})</span>
+                                    <span class="ml-1 text-gray-600 dark:text-gray-400 text-[10px] sm:text-xs">
+                                        ({{ number_format($product->averageRating(), 1) }})
+                                    </span>
                                 </div>
-                                <!-- Description - hidden on mobile -->
-                                <p
-                                    class="text-gray-600 dark:text-gray-300 mb-4 text-sm line-clamp-3 flex-grow hidden sm:block">
-                                    {{ $product->description }}
+    
+                                <p class="text-gray-600 dark:text-gray-300 mb-1 sm:mb-2 text-xs sm:text-sm line-clamp-2 sm:line-clamp-3">
+                                    {{ $product->short_description }}
                                 </p>
+    
+                                @if ($product->store && $product->store->alamat)
+                                    <p class="text-blue-600 dark:text-blue-400 text-xs sm:text-sm mb-2">
+                                        {{ $product->store->alamat }}
+                                    </p>
+                                @endif
+    
                                 <div class="flex justify-between items-center mt-auto">
-                                    <span
-                                        class="text-blue-600 dark:text-blue-400 font-bold text-sm sm:text-lg">Rp{{ number_format($product->price, 0, ',', '.') }}</span>
+                                    <span class="text-blue-600 dark:text-blue-400 font-bold text-sm sm:text-lg">
+                                        Rp{{ number_format($product->price, 0, ',', '.') }}
+                                    </span>
                                     <form action="{{ route('cart.add') }}" method="POST">
                                         @csrf
                                         <input type="hidden" name="product_id" value="{{ $product->id }}">
                                         <input type="hidden" name="quantity" value="1">
                                         <button type="button" onclick="addToCart(event, {{ $product->id }})"
-                                            class="bg-blue-600 hover:bg-blue-700 text-white p-1.5 sm:p-2 rounded-full transition-colors duration-200 transform group-hover:scale-105 group-hover:shadow-md">
+                                            class="bg-blue-600 hover:bg-blue-700 text-white p-1 sm:p-2 rounded-full transition-colors duration-200 transform group-hover:scale-105 group-hover:shadow-md">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5"
                                                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -222,54 +223,55 @@
                     </div>
                 @endforeach
             </div>
-
+    
             @if (!auth()->check())
-            <div class="text-center mt-8" data-aos="fade-up">
-                <p class="text-gray-600 dark:text-gray-300 mb-4">Login untuk melihat lebih banyak produk</p>
-                <a href="{{ route('login') }}"
-                    class="bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition">Login
-                    Sekarang</a>
-            </div>
-        @endif
+                <div class="text-center mt-8" data-aos="fade-up">
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">{{ __('messages.login_notice') }}</p>
+                    <a href="{{ route('login') }}"
+                        class="bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition">
+                        {{ __('messages.login_button') }}
+                    </a>
+                </div>
+            @endif
         </div>
     </section>
-
+    
     <!-- Testimonials -->
     <section class="py-16 bg-white dark:bg-gray-800">
         <div class="container mx-auto px-6 sm:px-10">
-            <h2 class="text-3xl sm:text-4xl font-bold mb-12 text-center dark:text-white" data-aos="fade-up">What Our
-                Customers Say</h2>
+            <h2 class="text-3xl sm:text-4xl font-bold mb-12 text-center dark:text-white" data-aos="fade-up">{{ __('messages.testimonials_heading') }}</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                @for ($i = 1; $i <= 3; $i++)
+                @foreach ($reviews as $review)
                     <div class="bg-gray-100 dark:bg-gray-700 p-6 rounded-lg shadow-md" data-aos="fade-up"
-                        data-aos-delay="{{ ($i - 1) * 100 }}">
+                        data-aos-delay="{{ $loop->index * 100 }}">
                         <div class="flex items-center mb-4">
-                            <img src="#" alt="User" class="w-12 h-12 rounded-full mr-4">
+                            <img src="{{ $review->user->image ? asset('storage/images/' . $review->user->image) : asset('images/default-user.png') }}"
+                                alt="User" class="w-12 h-12 rounded-full mr-4">
                             <div>
-                                <h3 class="font-semibold dark:text-white">John Doe</h3>
+                                <h3 class="font-semibold dark:text-white">{{ $review->user->name }}</h3>
                                 <div class="flex">
-                                    @for ($star = 1; $star <= 5; $star++)
-                                        <svg class="h-4 w-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                                    @for ($i = 1; $i <= 5; $i++)
+                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                            class="w-5 h-5 {{ $i <= $review->rating ? 'text-yellow-400' : 'text-gray-400' }}"
+                                            fill="currentColor" viewBox="0 0 24 24">
                                             <path
-                                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                d="M12 .587l3.668 7.571L24 9.748l-6 5.848 1.416 8.264L12 18.897l-7.416 4.963L6 15.596 0 9.748l8.332-1.59z" />
                                         </svg>
                                     @endfor
                                 </div>
                             </div>
                         </div>
-                        <p class="text-gray-600 dark:text-gray-300">"Amazing products and excellent customer service. I'm a
-                            happy customer!"</p>
+                        <p class="text-gray-600 dark:text-gray-300">{{ $review->comment }}</p>
                     </div>
-                @endfor
+                @endforeach
             </div>
         </div>
     </section>
-
     <!-- Trust Badges -->
     <section class="py-16 bg-gray-50 dark:bg-gray-900">
         <div class="container mx-auto px-6 sm:px-10">
             <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-                @foreach ([['🚚', 'Free Shipping'], ['🔄', 'Easy Returns'], ['✅', '100% Authentic'], ['🔒', 'Secure Payment']] as $index => $badge)
+                @foreach ([['🚚', __('messages.badge_shipping')], ['🔄', __('messages.badge_returns')], ['✅', __('messages.badge_authentic')], ['🔒', __('messages.badge_secure')]] as $index => $badge)
                     <div class="flex flex-col items-center" data-aos="fade-up" data-aos-delay="{{ $index * 100 }}">
                         <span class="text-4xl mb-2">{{ $badge[0] }}</span>
                         <h3 class="font-semibold dark:text-white">{{ $badge[1] }}</h3>
@@ -278,22 +280,43 @@
             </div>
         </div>
     </section>
+    
 
     <!-- Blog Preview -->
     <section class="py-16 bg-white dark:bg-gray-800">
         <div class="container mx-auto px-6 sm:px-10">
-            <h2 class="text-3xl sm:text-4xl font-bold mb-12 text-center dark:text-white" data-aos="fade-up">Tech Blog</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                @foreach (['Top 10 Laptops for 2025', 'The Future of Smartphones', 'Essential Tech Accessories'] as $index => $title)
-                    <div class="bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden shadow-md" data-aos="fade-up"
-                        data-aos-delay="{{ $index * 100 }}">
-                        <img src="#" alt="{{ $title }}" class="w-full h-48 object-cover">
+            <div class="flex justify-between items-center mb-12">
+                <h2 class="text-3xl sm:text-4xl font-bold text-center dark:text-white" data-aos="fade-up">{{ __('messages.blog_heading') }}</h2>
+                <a href="{{ route('blogs.index') }}"
+                    class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200" data-aos="fade-up">
+                    {{ __('messages.view_all_articles') }}
+                </a>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                @foreach ($blogs as $index => $blog)
+                    <div class="bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden shadow-md transform transition duration-300 hover:scale-105"
+                        data-aos="fade-up" data-aos-delay="{{ $index * 100 }}">
+                        <img src="{{ Storage::url($blog->featured_image) }}" alt="{{ $blog->title }}"
+                            class="w-full h-48 object-cover">
                         <div class="p-6">
-                            <h3 class="font-semibold text-lg mb-2 dark:text-white">{{ $title }}</h3>
-                            <p class="text-gray-600 dark:text-gray-300 mb-4">Lorem ipsum dolor sit amet, consectetur
-                                adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-                            <a href="#" class="text-blue-600 dark:text-blue-400 font-semibold hover:underline">Read
-                                More</a>
+                            <h3 class="font-semibold text-lg mb-2 dark:text-white line-clamp-2">
+                                {{ $blog->title }}
+                            </h3>
+                            <p class="text-gray-600 dark:text-gray-300 mb-2 text-sm">
+                                {{ $blog->published_at->translatedFormat('d F Y') }}
+                            </p>
+                            <p class="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">
+                                {{ $blog->excerpt }}
+                            </p>
+                            <a href="{{ route('blogs.show', $blog->slug) }}"
+                                class="text-blue-600 dark:text-blue-400 font-semibold hover:underline flex items-center">
+                                {{ __('messages.read_more') }}
+                                <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5l7 7-7 7" />
+                                </svg>
+                            </a>
                         </div>
                     </div>
                 @endforeach
@@ -306,62 +329,54 @@
         <div class="container mx-auto px-6 sm:px-10">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                 <div>
-                    <h3 class="text-xl font-bold mb-4">About TechStore</h3>
-                    <p class="text-gray-400">Empowering your digital lifestyle with cutting-edge technology and
-                        unparalleled customer experience.</p>
+                    <h3 class="text-xl font-bold mb-4">{{ __('messages.about_title') }}</h3>
+                    <p class="text-gray-400">{{ __('messages.about_description') }}</p>
                 </div>
                 <div>
-                    <h3 class="text-xl font-bold mb-4">Customer Service</h3>
+                    <h3 class="text-xl font-bold mb-4">{{ __('messages.customer_service') }}</h3>
                     <ul class="space-y-2">
-                        <li><a href="#" class="text-gray-400 hover:text-white">Contact Us</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">FAQs</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Shipping & Returns</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white">Warranty & Support</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">{{ __('messages.contact_us') }}</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">{{ __('messages.faq') }}</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">{{ __('messages.shipping') }}</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">{{ __('messages.warranty_support') }}</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h3 class="text-xl font-bold mb-4">Connect With Us</h3>
+                    <h3 class="text-xl font-bold mb-4">{{ __('messages.connect_with_us') }}</h3>
                     <div class="flex space-x-4">
-                        @foreach (['Facebook', 'Twitter', 'Instagram', 'LinkedIn'] as $social)
-                            <a href="#"
-                                class="text-gray-400 hover:text-white transition-colors duration-200">{{ $social }}</a>
+                        @foreach (['Facebook', 'Github', 'Instagram'] as $social)
+                            <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">{{ $social }}</a>
                         @endforeach
-                    </div>
-                    <div class="mt-4">
-                        <h4 class="font-semibold mb-2">Subscribe to our newsletter</h4>
-                        <form class="flex">
-                            <input type="email" placeholder="Your email" class="px-4 py-2 rounded-l-lg w-full">
-                            <button type="submit"
-                                class="bg-blue-600 text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition-colors duration-200">Subscribe</button>
-                        </form>
                     </div>
                 </div>
                 <div>
-                    <h3 class="text-xl font-bold mb-4">Payment Methods</h3>
+                    <h3 class="text-xl font-bold mb-4">{{ __('messages.payment_methods') }}</h3>
                     <div class="flex flex-wrap gap-2">
-                        @foreach (['Visa', 'Mastercard', 'PayPal', 'Apple Pay'] as $method)
+                        @foreach (['Transfer Bank', 'QRIS', 'E-Wallet', 'Kartu Kredit'] as $method)
                             <div class="bg-gray-700 text-white px-3 py-1 rounded-full text-sm">{{ $method }}</div>
                         @endforeach
                     </div>
-                    <h3 class="text-xl font-bold mt-6 mb-4">Shipping Partners</h3>
+                    <h3 class="text-xl font-bold mt-6 mb-4">{{ __('messages.shipping_partners') }}</h3>
                     <div class="flex flex-wrap gap-2">
-                        @foreach (['FedEx', 'UPS', 'DHL'] as $partner)
+                        @foreach (['JNE', 'SiCepat', 'J&T', 'Pos', 'AnterAja'] as $partner)
                             <div class="bg-gray-700 text-white px-3 py-1 rounded-full text-sm">{{ $partner }}</div>
                         @endforeach
                     </div>
                 </div>
             </div>
             <div class="mt-8 pt-8 border-t border-gray-700 text-center text-gray-400">
-                <p>&copy; {{ date('Y') }} TechStore. All rights reserved. | <a href="#"
-                        class="hover:text-white">Privacy Policy</a> | <a href="#" class="hover:text-white">Terms of
-                        Service</a></p>
+                <p>&copy; {{ date('Y') }} TechnoShop. {{ __('messages.copyright') }} | <a href="#"
+                        class="hover:text-white">{{ __('messages.privacy_policy') }}</a> | <a href="#"
+                        class="hover:text-white">{{ __('messages.terms_conditions') }}</a></p>
             </div>
         </div>
     </footer>
+    
+
 @endsection
 
 <script>
-        function checkLoginAndRedirect() {
+    function checkLoginAndRedirect() {
         // Cek apakah pengguna sudah login
         const isLoggedIn = {{ auth()->check() ? 'true' : 'false' }};
 
@@ -387,6 +402,7 @@
             window.location.href = '/products';
         }
     }
+
     function addToCart(event, productId) {
         event.preventDefault(); // Mencegah form submit
 

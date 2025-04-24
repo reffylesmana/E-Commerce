@@ -2,9 +2,13 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Widgets\LatestOrdersTable;
+use App\Filament\Widgets\MonthlySalesChart;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use App\Filament\Widgets\QuickStats;
+use App\Filament\Widgets\SalesByCategoryChart;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -40,8 +44,9 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets') // Mengubah lokasi Widgets Admin
             ->widgets([
-                Widgets\AccountWidget::class, // Widget akun
-                Widgets\FilamentInfoWidget::class, // Widget informasi Filament
+                QuickStats::class,
+                MonthlySalesChart::class,
+                LatestOrdersTable::class,
             ])
             ->middleware([
                 EncryptCookies::class,

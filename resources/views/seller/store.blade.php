@@ -172,6 +172,12 @@
                                     </svg>
                                     <span class="text-gray-700">Last Updated: <span class="font-medium">{{ $store->updated_at->format('M d, Y') }}</span></span>
                                 </div>
+                                <div class="flex items-center text-sm">
+                                    <svg class="w-4 h-4 text-gray-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                                    </svg>
+                                    <span class="text-gray-700">Alamat: <span class="font-medium">{{ $store->alamat }}</span></span>
+                                </div>
                             </div>
                         </div>
                         
@@ -278,6 +284,16 @@
                             <label for="description"
                                 class="absolute text-gray-500 duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] left-4 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:top-6 peer-focus:top-4 peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:text-indigo-500">
                                 Description
+                            </label>
+                        </div>
+
+                        <div class="relative">
+                            <textarea name="alamat" id="alamat" rows="3"
+                                class="w-full py-4 px-4 pt-6 pb-2 border-0 ring-1 ring-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all peer resize-none"
+                                placeholder=" ">{{ old('alamat', $store->alamat ?? '') }}</textarea>
+                            <label for="alamat"
+                                class="absolute text-gray-500 duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] left-4 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:top-6 peer-focus:top-4 peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:text-indigo-500">
+                                Alamat
                             </label>
                         </div>
 

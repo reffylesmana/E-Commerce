@@ -128,6 +128,12 @@ class StoreResource extends Resource
                     ->sortable()
                     ->searchable()
                     ->label('Owner'),
+
+                TextColumn::make('alamat')
+                    ->label('Alamat')
+                    ->limit(50)
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 
                 TextColumn::make('categories.name')
                     ->badge()

@@ -107,6 +107,18 @@
                                             class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:focus:border-blue-500 dark:bg-gray-700 dark:text-white">{{ auth()->user()->address ?? '' }}</textarea>
                                     </div>
                                     <div>
+                                        <label for="address_type"
+                                            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tipe
+                                            Alamat</label>
+                                        <select id="address_type" name="address_type" required
+                                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:focus:border-blue-500 dark:bg-gray-700 dark:text-white">
+                                            <option value="">-- Pilih Tipe Alamat --</option>
+                                            <option value="rumah">Rumah</option>
+                                            <option value="kantor">Kantor</option>
+                                            <option value="lainnya">Lainnya</option>
+                                        </select>
+                                    </div>
+                                    <div>
                                         <label for="postal_code"
                                             class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kode
                                             Pos</label>
@@ -129,6 +141,7 @@
                                 </div>
                             </div>
                         </div>
+
 
                         <!-- Order Notes -->
                         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden mb-6">

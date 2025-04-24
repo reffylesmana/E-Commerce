@@ -12,6 +12,7 @@ use App\Models\Address;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Midtrans\Config;
 use Midtrans\Snap;
 
@@ -90,116 +91,151 @@ class CheckoutController extends Controller
             'gross_amount' => 'required|numeric',
             'order_id' => 'required|string|unique:orders,order_number',
         ]);
+
+        $orderNumber = 'ORD-' . time() . '-' . Auth::id();
         DB::beginTransaction();
 
-        try {
-            $address = null;
-            $shippingAddress = '';
+        $address = null;
+        $shippingAddress = '';
 
-            if ($request->has('address_id') && $request->address_id) {
-                $address = Address::where('id', $request->address_id)->where('user_id', Auth::id())->first();
+        if ($request->has('address_id') && $request->address_id) {
+            $address = Address::where('id', $request->address_id)->where('user_id', Auth::id())->first();
 
-                if ($address) {
-                    $shippingAddress = $address->full_address . ', ' . $address->district . ', ' . $address->city . ', ' . $address->province . ', ' . $address->postal_code;
-                }
-            } else {
-                $address = Address::create([
-                    'user_id' => Auth::id(),
-                    'name' => 'Alamat Pengiriman',
-                    'recipient_name' => $request->name,
-                    'phone' => $request->phone,
-                    'province' => '',
-                    'city' => $request->city,
-                    'district' => '',
-                    'postal_code' => $request->postal_code,
-                    'full_address' => $request->address,
-                    'is_default' => !Address::where('user_id', Auth::id())->exists(),
-                    'address_type' => 'other',
-                ]);
-
-                $shippingAddress = $request->address . ', ' . $request->city . ', ' . $request->postal_code;
+            if ($address) {
+                $shippingAddress = $address->full_address . ', ' . $address->city . ', ' . $address->postal_code;
             }
-
-            $transaction = Transaction::create([
+        } else {
+            $address = Address::create([
                 'user_id' => Auth::id(),
-                'invoice_number' => 'INV-' . time() . '-' . Auth::id(),
-                'total_amount' => $request->gross_amount,
-                'shipping_cost' => 20000,
-                'tax_amount' => ($request->gross_amount - 20000) * 0.11,
-                'status' => 'pending',
-                'notes' => $request->notes,
+                'name' => 'Alamat Pengiriman',
+                'recipient_name' => $request->name,
+                'phone' => $request->phone,
+                'city' => $request->city,
+                'postal_code' => $request->postal_code,
+                'full_address' => $request->address,
+                'is_default' => !Address::where('user_id', Auth::id())->exists(),
+                'address_type' => 'other',
             ]);
 
-            $order = Order::create([
-                'user_id' => Auth::id(),
-                'transaction_id' => $transaction->id,
-                'address_id' => $address->id,
-                'order_number' => $request->order_id,
-                'total_amount' => $request->gross_amount,
-                'shipping_address' => $shippingAddress,
-                'shipping_method' => $request->shipping_method,
-                'status' => 'pending',
-                'notes' => $request->notes,
-            ]);
-
-            $cartItems = Cart::where('user_id', Auth::id())->with('product')->get();
-
-            foreach ($cartItems as $cartItem) {
-                OrderItem::create([
-                    'order_id' => $order->id,
-                    'product_id' => $cartItem->product_id,
-                    'quantity' => $cartItem->quantity,
-                    'price' => $cartItem->product->price,
-                    'subtotal' => $cartItem->product->price * $cartItem->quantity,
-                    'user_id' => $cartItem->product->user_id,
-                ]);
-
-                $cartItem->product->decrement('stock', $cartItem->quantity);
-            }
-
-            Payment::create([
-                'transaction_id' => $transaction->id,
-                'payment_id' => $request->transaction_id ?? 'PENDING-' . time(),
-                'payment_method' => $request->payment_method,
-                'amount' => $request->gross_amount,
-                'status' => $request->transaction_id ? 'success' : 'pending',
-            ]);
-
-            Shipping::create([
-                'order_id' => $order->id,
-                'address_id' => $address->id,
-                'tracking_number' => null,
-                'shipping_method' => $request->shipping_method,
-                'status' => 'pending',
-                'shipping_address' => $shippingAddress,
-                'notes' => $request->notes,
-            ]);
-
-            if ($request->transaction_id) {
-                $transaction->status = 'paid';
-                $transaction->save();
-            }
-
-            Cart::where('user_id', Auth::id())->delete();
-
-            DB::commit();
-
-            return redirect()->route('orders.show', $order->id)->with('success', 'Pesanan berhasil dibuat. Terima kasih telah berbelanja di TechnoShop!');
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            // Debug log (sementara untuk pengembangan)
-            dd('Error Debug:', [
-                'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return redirect()
-                ->route('checkout.index')
-                ->with('error', 'Terjadi kesalahan saat memproses pesanan: ' . $e->getMessage());
+            $shippingAddress = $request->address . ', ' . $request->city . ', ' . $request->postal_code;
         }
+
+        $transaction = Transaction::create([
+            'user_id' => Auth::id(),
+            'invoice_number' => 'INV-' . time() . '-' . Auth::id(),
+            'total_amount' => $request->gross_amount,
+            'shipping_cost' => 20000,
+            'tax_amount' => ($request->gross_amount - 20000) * 0.11,
+            'status' => 'pending',
+            'notes' => $request->notes,
+        ]);
+
+        $order = Order::create([
+            'user_id' => Auth::id(),
+            'transaction_id' => $transaction->id,
+            'address_id' => $address->id,
+            'order_number' => $orderNumber,
+            'total_amount' => $request->gross_amount,
+            'shipping_address' => $shippingAddress,
+            'shipping_method' => $request->shipping_method,
+            'status' => 'processing',
+            'notes' => $request->notes,
+        ]);
+
+        $cartItems = Cart::where('user_id', Auth::id())->with('product')->get();
+
+        foreach ($cartItems as $cartItem) {
+            OrderItem::create([
+                'order_id' => $order->id,
+                'product_id' => $cartItem->product_id,
+                'quantity' => $cartItem->quantity,
+                'price' => $cartItem->product->price,
+                'subtotal' => $cartItem->product->price * $cartItem->quantity,
+                'user_id' => $cartItem->product->user_id,
+            ]);
+
+            $cartItem->product->decrement('stock', $cartItem->quantity);
+        }
+
+        Payment::create([
+            'transaction_id' => $transaction->id,
+            'payment_id' => $request->order_id,
+            'payment_method' => $request->payment_method,
+            'amount' => $request->gross_amount,
+            'status' => $request->transaction_id ? 'success' : 'pending',
+        ]);
+
+        Shipping::create([
+            'order_id' => $order->id,
+            'address_id' => $address->id,
+            'no_resi' => null,
+            'shipping_method' => $request->shipping_method,
+            'status' => 'pending',
+            'shipping_address' => $shippingAddress,
+            'notes' => $request->notes,
+        ]);
+
+        if ($request->transaction_id) {
+            $transaction->status = 'paid';
+            $transaction->save();
+        }
+
+// Get all unique sellers from the order items
+$sellers = DB::table('order_items')
+            ->where('order_id', $order->id)
+            ->whereNotNull('user_id')
+            ->select('user_id')
+            ->distinct()
+            ->pluck('user_id')
+            ->toArray();
+
+// Create notifications for each seller
+foreach ($sellers as $sellerId) {
+    // Basic notification data
+    $newOrderData = [
+        'id' => Str::uuid(),
+        'type' => 'App\Notifications\NewOrder',
+        'notifiable_id' => $sellerId,
+        'notifiable_type' => 'App\Models\User',
+        'data' => json_encode([
+            'message' => 'Anda menerima pesanan baru #' . $order->order_number,
+            'order_id' => $order->id,
+            'buyer_id' => Auth::id(),
+            'created_at' => now()->toDateTimeString()
+        ]),
+        'created_at' => now(),
+        'updated_at' => now(),
+    ];
+
+    // Insert the notification using DB facade
+    DB::table('notifications')->insert($newOrderData);
+
+    // If payment was successful, add payment notification
+    if ($request->transaction_id) {
+        $paymentData = [
+            'id' => Str::uuid(),
+            'type' => 'App\Notifications\PaymentReceived',
+            'notifiable_id' => $sellerId,
+            'notifiable_type' => 'App\Models\User',
+            'data' => json_encode([
+                'message' => 'Pembayaran diterima untuk pesanan #' . $order->order_number,
+                'order_id' => $order->id,
+                'amount' => $request->gross_amount,
+                'buyer_id' => Auth::id(),
+                'created_at' => now()->toDateTimeString()
+            ]),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ];
+
+        DB::table('notifications')->insert($paymentData);
+    }
+}
+        Cart::where('user_id', Auth::id())->delete();
+
+        DB::commit();
+
+        return redirect()->route('orders.show', $order->id)->with('success', 'Pesanan berhasil dibuat. Terima kasih telah berbelanja di TechnoShop!');
     }
 
     private function getEnabledPayments($paymentMethod)

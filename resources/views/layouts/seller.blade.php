@@ -23,6 +23,8 @@
     <!-- Tom Select (Alternative Select) -->
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
 
+    
+
     <!-- Styles -->
     @vite('resources/css/app.css')
 
@@ -34,76 +36,59 @@
         $storeApproved = $store && $store->is_approved;
     @endphp
     <style>
-        /* Custom CSS */
-
-        * {
-            transition: all 0.15 s ease-in-out;
+        /* Custom CSS for Seller Menu */
+        :root {
+            --primary-color: #1e3a8a;
+            --hover-color: #3b82f6;
+            --notification-bg: #f0f9ff;
         }
 
-        :root {
-            --sidebar-width-expanded: 16rem;
-            --sidebar-width-collapsed: 5rem;
-            --transition-duration: 0.3s;
+        .header {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .header h1 {
+            color: white;
+        }
+
+        .header .dropdown-menu {
+            background-color: white;
+            border: 1px solid var(--primary-color);
+        }
+
+        .header .dropdown-menu a {
+            color: var(--primary-color);
+        }
+
+        .header .dropdown-menu a:hover {
+            background-color: var(--hover-color);
+            color: white;
         }
 
         .sidebar {
-            width: var(--sidebar-width-expanded);
-            transition: all var(--transition-duration) ease;
-            height: 100vh;
-            position: fixed;
-            left: 0;
-            top: 0;
+            background-color: var(--primary-color);
         }
 
-        .sidebar-collapsed {
-            width: var(--sidebar-width-collapsed);
+        .sidebar a {
+            color: white;
         }
 
-        .main-content {
-            margin-left: var(--sidebar-width-expanded);
-            transition: margin var(--transition-duration) ease;
+        .sidebar a:hover {
+            background-color: var(--hover-color);
         }
 
-        .sidebar-collapsed+.main-content {
-            margin-left: var(--sidebar-width-collapsed);
+        .sidebar .nav-text {
+            transition: color 0.3s ease;
         }
 
-        .nav-text {
-            opacity: 1;
-            transition: opacity var(--transition-duration) ease;
+        .sidebar .nav-text:hover {
+            color: var(--hover-color);
         }
 
-        /* Di dalam tag style di main layout */
-        .sidebar-collapsed .nav-text {
-            opacity: 0;
-            width: 0;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .sidebar:not(.sidebar-collapsed) .nav-text {
-            opacity: 1;
-            width: auto;
-        }
-
-        .sidebar-collapsed img {
-            margin-left: 0.25rem;
-            transform: scale(0.9);
-        }
 
         .dropdown-menu {
-            display: none;
-            right: 0;
-            min-width: 12rem;
-        }
-
-        .dark-mode {
-            background-color: #1a202c;
-            color: #fff;
-        }
-
-        .dark-mode .sidebar {
-            background-color: #2d3748;
+            transition: all 0.3s ease;
         }
     </style>
 </head>
@@ -151,20 +136,7 @@
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 
     <script>
-        // Di dalam template (bagian script)
-        @if (Session::has('swal'))
-            document.addEventListener('DOMContentLoaded', function() {
-                Swal.fire({
-                    icon: "{{ Session::get('swal.icon', 'success') }}",
-                    title: "{{ Session::get('swal.title') }}",
-                    text: "{{ Session::get('swal.text') }}",
-                    confirmButtonText: "{{ Session::get('swal.button', 'OK') }}",
-                    confirmButtonColor: "#6366f1",
-                    timer: {{ Session::get('swal.timer', 'null') }}, // dalam milidetik
-                    timerProgressBar: true,
-                });
-            });
-        @endif
+
         // Toggle Sidebar
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');

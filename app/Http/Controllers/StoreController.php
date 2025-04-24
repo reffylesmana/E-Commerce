@@ -28,12 +28,14 @@ class StoreController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'description' => 'required|string',
+            'alamat' => 'nullable|string', 
             'logo' => 'required|image|mimes:jpeg,png,gif|max:1024',
             'categories' => 'required|array|min:1',
             'categories.*' => 'exists:categories,id',
         ], [
             'name.required' => 'Nama toko wajib diisi',
             'description.required' => 'Deskripsi toko wajib diisi',
+            'alamat.required' => 'Alamat toko wajib diisi',
             'logo.required' => 'Logo toko wajib diupload',
             'categories.required' => 'Pilih minimal 1 kategori',
         ]);
@@ -54,6 +56,7 @@ class StoreController extends Controller
             $store = new Store();
             $store->name = $request->name;
             $store->slug = Str::slug($request->name);
+            $store->alamat = $request->alamat;
             $store->description = $request->description;
             $store->user_id = Auth::id();
             $store->created_by = Auth::id(); 
@@ -96,11 +99,13 @@ class StoreController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'description' => 'required|string',
+            'alamat' => 'nullable|string', 
             'logo' => 'nullable|image|mimes:jpeg,png,gif|max:1024',
             'categories' => 'required|array|min:1',
             'categories.*' => 'exists:categories,id',
         ], [
             'name.required' => 'Nama toko wajib diisi',
+            'alamat.required' => 'Alamat toko wajib diisi',
             'description.required' => 'Deskripsi toko wajib diisi',
             'categories.required' => 'Pilih minimal 1 kategori',
         ]);
@@ -119,6 +124,7 @@ class StoreController extends Controller
 
         try {
             $store->name = $request->name;
+            $store->alamat = $request->alamat;
             
             if (!$store->is_approved) {
                 $store->slug = Str::slug($request->name);

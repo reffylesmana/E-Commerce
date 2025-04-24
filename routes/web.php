@@ -8,6 +8,7 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\SellerController;
 use App\Http\Controllers\AddressController;
+use App\Http\Controllers\BannerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OrderController;
@@ -15,6 +16,9 @@ use App\Http\Controllers\PaymentCallbackController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\BlogController;
+use App\Http\Controllers\DiscountController;
+use App\Http\Controllers\SellerBlogController;
 use App\Http\Controllers\SellerCartController;
 use App\Http\Controllers\SellerOrderController;
 use App\Http\Controllers\TransactionController;
@@ -28,12 +32,14 @@ Route::get('/products', [ProductController::class, 'allProducts'])->name('produc
 Route::get('/products/{slug}', [ProductController::class, 'show'])->name('show');
 Route::get('/store/{slug}', [ProductController::class, 'storeProducts'])->name('store');
 Route::post('/wishlist/add', [ProductController::class, 'addToWishlist'])->name('wishlist.add');
-Route::post('/wishlist/remove/{id}', [ProductController::class, 'removeFromWishlist'])->name('wishlist.remove');
+Route::delete('/wishlist/remove/{id}', [ProductController::class, 'removeFromWishlist'])->name('wishlist.remove');
 Route::get('/profile/edit-buyer', function () {
-    return view('profile.partials.update-buyer'); // Pastikan path ini sesuai dengan lokasi file Anda
+    return view('profile.partials.update-buyer');
 })
     ->middleware('auth')
     ->name('profile.edit.buyer');
+Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blogs.show');
+route::get('/blogs', [BlogController::class, 'index'])->name('blogs.index');
 
 // ====================== RUTE BUYER (CUSTOMER) ======================
 Route::middleware(['auth'])->group(function () {
@@ -59,6 +65,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/process', [CheckoutController::class, 'process'])->name('checkout.process');
         Route::post('/token', [CheckoutController::class, 'getToken'])->name('checkout.getToken');
         Route::post('/update-payment', [CheckoutController::class, 'updatePayment'])->name('checkout.updatePayment');
+        Route::post('/apply-discount', [CartController::class, 'applyDiscount'])->name('cart.applyDiscount');
+        Route::post('/remove-discount', [CartController::class, 'removeDiscount'])->name('cart.removeDiscount');
     });
 
     // Orders (Buyer)
@@ -77,10 +85,17 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/orders/shipped', [AccountController::class, 'shippedOrders'])->name('orders.shipped');
         Route::get('/orders/completed', [AccountController::class, 'completedOrders'])->name('orders.completed');
         Route::get('/orders/cancelled', [OrderController::class, 'cancelled'])->name('orders.cancelled');
-        Route::get('/reviews', [AccountController::class, 'reviews'])->name('reviews.index');
-        Route::get('/review', [ReviewController::class, 'create'])->name('reviews.create');
+        Route::get('/reviews', [ReviewController::class, 'index'])->name('reviews.index');
+        Route::get('/reviews/create', [ReviewController::class, 'create'])->name('reviews.create');
         Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+        Route::get('/reviews/{id}/edit', [ReviewController::class, 'edit'])->name('reviews.edit');
+        Route::put('/reviews/{id}', [ReviewController::class, 'update'])->name('reviews.update');
+        Route::post('/reviews/{id}/remove-image', [ReviewController::class, 'removeImage'])->name('reviews.removeImage');
         Route::post('/account/orders/{order}/mark-delivered', [OrderController::class, 'markAsDelivered'])->name('orders.mark-as-delivered');
+        Route::post('/address/store', [AddressController::class, 'store'])->name('address.store');
+        Route::put('/address/{id}', [AddressController::class, 'update'])->name('address.update');
+        Route::delete('/address/{id}', [AddressController::class, 'destroy'])->name('address.destroy');
+        Route::get('/address/{id}', [AddressController::class, 'show'])->name('address.show');
     });
 
     // Notifications
@@ -118,9 +133,9 @@ Route::middleware(['auth', \App\Http\Middleware\RoleMiddleware::class . ':seller
             Route::get('/', [ProductController::class, 'sellerProducts'])->name('seller.products.index');
             Route::get('/create', [ProductController::class, 'create'])->name('seller.products.create');
             Route::post('/', [ProductController::class, 'store'])->name('seller.products.store');
-            Route::get('/{product}/edit', [ProductController::class, 'edit'])->name('seller.products.edit');
-            Route::put('/{product}', [ProductController::class, 'update'])->name('seller.products.update');
-            Route::delete('/{product}', [ProductController::class, 'destroy'])->name('seller.products.destroy');
+            Route::get('/edit/{product:id}', [ProductController::class, 'edit'])->name('seller.products.edit');
+            Route::put('/{product:id}', [ProductController::class, 'update'])->name('seller.products.update');
+            Route::delete('/{product:id}', [ProductController::class, 'destroy'])->name('seller.products.destroy');
 
             // Image Handling
             Route::post('/upload-temp-image', [ProductController::class, 'uploadTempImage'])->name('products.upload-temp-image');
@@ -130,40 +145,40 @@ Route::middleware(['auth', \App\Http\Middleware\RoleMiddleware::class . ':seller
 
         // Transactions Management
         Route::prefix('transactions')
-            ->name('seller.transactions.') // Nama base: seller.transactions.
+            ->name('seller.transactions.')
             ->group(function () {
                 // Orders
                 Route::prefix('orders')
-                    ->name('orders.') // seller.transactions.orders.
+                    ->name('orders.')
                     ->group(function () {
-                        Route::get('/', [SellerOrderController::class, 'index'])->name('orders'); // seller.transactions.orders.index
-                        Route::get('/{order}', [SellerOrderController::class, 'show'])->name('show'); // seller.transactions.orders.show
+                        Route::get('/', [SellerOrderController::class, 'index'])->name('orders');
+                        Route::get('/{order}', [SellerOrderController::class, 'show'])->name('show');
                     });
 
                 // Payments
                 Route::prefix('payments')
-                    ->name('payments.') // seller.transactions.payments.
+                    ->name('payments.')
                     ->group(function () {
-                        Route::get('/', [PaymentController::class, 'index'])->name('payments'); // seller.transactions.payments.index
-                        Route::get('/{payment}', [PaymentController::class, 'show'])->name('show'); // seller.transactions.payments.show
+                        Route::get('/', [PaymentController::class, 'index'])->name('payments');
+                        Route::get('/{payment}', [PaymentController::class, 'show'])->name('show');
                     });
 
                 // Shipping
                 Route::prefix('shipping')
-                    ->name('shipping.') // seller.transactions.shipping.
+                    ->name('shipping.')
                     ->group(function () {
-                        Route::get('/', [ShippingController::class, 'index'])->name('shipping'); // seller.transactions.shipping.index
-                        Route::get('/{shipping}', [ShippingController::class, 'show'])->name('show'); // seller.transactions.shipping.show
+                        Route::get('/', [ShippingController::class, 'index'])->name('shipping');
+                        Route::get('/{shipping}', [ShippingController::class, 'show'])->name('show');
                         Route::put('/{shipping}', [ShippingController::class, 'update'])->name('update');
                         Route::post('/{shipping}/send', [ShippingController::class, 'send'])->name('send');
                     });
 
                 // Cart
                 Route::prefix('cart')
-                    ->name('cart.') // seller.transactions.cart.
+                    ->name('cart.')
                     ->group(function () {
-                        Route::get('/', [SellerCartController::class, 'index'])->name('cart'); // seller.transactions.cart.index
-                        Route::post('/reminder/{user}', [SellerCartController::class, 'sendReminder'])->name('reminder'); // seller.transactions.cart.reminder
+                        Route::get('/', [SellerCartController::class, 'index'])->name('cart');
+                        Route::post('/reminder/{user}', [SellerCartController::class, 'sendReminder'])->name('reminder');
                     });
             });
 
@@ -171,6 +186,40 @@ Route::middleware(['auth', \App\Http\Middleware\RoleMiddleware::class . ':seller
         Route::prefix('reviews')->group(function () {
             Route::get('/', [ReviewController::class, 'sellerReviews'])->name('seller.reviews.index');
             Route::post('/{review}/reply', [ReviewController::class, 'storeReply'])->name('seller.reviews.reply');
+        });
+
+        // Discounts
+        Route::prefix('discounts')
+            ->name('seller.discounts.')
+            ->group(function () {
+                Route::get('/', [DiscountController::class, 'index'])->name('index');
+                Route::get('/create', [DiscountController::class, 'create'])->name('create');
+                Route::post('/', [DiscountController::class, 'store'])->name('store');
+                Route::get('/{discount}/edit', [DiscountController::class, 'edit'])->name('edit');
+                Route::put('/{discount}', [DiscountController::class, 'update'])->name('update');
+                Route::delete('/{discount}', [DiscountController::class, 'destroy'])->name('destroy');
+            });
+
+        // Banners
+        Route::prefix('banners')->group(function () {
+            Route::get('/', [BannerController::class, 'index'])->name('seller.banners.index');
+            Route::get('/create', [BannerController::class, 'create'])->name('seller.banners.create');
+            Route::get('/{banner}/edit', [BannerController::class, 'edit'])->name('seller.banners.edit');
+            Route::post('/update-order', [BannerController::class, 'updateOrder'])->name('seller.banners.update-order');
+            Route::post('/', [BannerController::class, 'store'])->name('seller.banners.store');
+            Route::put('/{banner}', [BannerController::class, 'update'])->name('seller.banners.update');
+            Route::delete('/{banner}', [BannerController::class, 'destroy'])->name('seller.banners.destroy');
+        });
+
+        // Blogs Management
+        Route::prefix('blogs')->group(function () {
+            Route::get('/', [SellerBlogController::class, 'index'])->name('seller.blogs.index');
+            Route::get('/create', [SellerBlogController::class, 'create'])->name('seller.blogs.create');
+            Route::post('/', [SellerBlogController::class, 'store'])->name('seller.blogs.store');
+            Route::get('/{blog}/edit', [SellerBlogController::class, 'edit'])->name('seller.blogs.edit');
+            Route::get('/{blog}', [SellerBlogController::class, 'show'])->name('seller.blogs.show');
+            Route::put('/{blog}', [SellerBlogController::class, 'update'])->name('seller.blogs.update');
+            Route::delete('/{blog}', [SellerBlogController::class, 'destroy'])->name('seller.blogs.destroy');
         });
 
         // Reports
@@ -182,6 +231,7 @@ Route::middleware(['auth', \App\Http\Middleware\RoleMiddleware::class . ':seller
 
 // ====================== RUTE LAINNYA ======================
 Route::post('/payment/callback', [PaymentCallbackController::class, 'handle'])->name('payment.callback');
+Route::post('/checkout', [CartController::class, 'checkout'])->name('checkout');
 
 // Authentication
 require __DIR__ . '/auth.php';

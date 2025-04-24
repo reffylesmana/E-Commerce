@@ -3,6 +3,19 @@
 @section('title', $product->name)
 
 @section('content')
+
+<style>
+    @keyframes ping {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); }
+    }
+
+    .animate-ping {
+        animation: ping 1.5s infinite;
+    }
+</style>
+
     <div class="container mx-auto px-4 py-8">
         <!-- Breadcrumb -->
         <nav class="flex mb-6" aria-label="Breadcrumb">
@@ -90,19 +103,24 @@
                                     {{ $product->name }}</h1>
                                 <button
                                     class="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors duration-300">
-                                    <i class="iconify text-2xl" data-icon="lucide:heart"></i>
+                                    <i class="iconify text-2xl" data-icon="lucide:heart-fill"></i>
                                 </button>
                             </div>
 
                             <div class="flex items-center mt-2">
                                 <div class="flex">
                                     @for ($i = 1; $i <= 5; $i++)
-                                        <i class="iconify text-{{ $i <= 4 ? 'yellow' : 'gray' }}-400"
-                                            data-icon="lucide:star"></i>
+                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                            class="w-5 h-5 {{ $i <= round($averageRating) ? 'text-yellow-400' : 'text-gray-400' }}"
+                                            fill="currentColor" viewBox="0 0 24 24">
+                                            <path
+                                                d="M12 .587l3.668 7.571L24 9.748l-6 5.848 1.416 8.264L12 18.897l-7.416 4.963L6 15.596 0 9.748l8.332-1.59z" />
+                                        </svg>
                                     @endfor
                                 </div>
-                                <span class="ml-2 text-gray-600 dark:text-gray-400 text-sm">(4.0) · {{ $product->views }}
-                                    views</span>
+                                <span
+                                    class="ml-2 text-gray-600 dark:text-gray-400 text-sm">({{ number_format($averageRating, 1) }})
+                                    · {{ $product->views }} views</span>
                             </div>
 
                             <div class="mt-2 flex items-center">
@@ -112,7 +130,7 @@
                                     {{ $category->name }}
                                 </a>
                             </div>
-
+                            
                             <div class="mt-2 flex items-center">
                                 <span class="text-gray-600 dark:text-gray-400">Store:</span>
                                 <a href="{{ route('store', $store->slug) }}"
@@ -128,6 +146,16 @@
                                     @endif
                                 </a>
                             </div>
+                            <div class="mt-2 flex items-center">
+                                <span class="text-gray-600 dark:text-gray-400">Alamat:</span>
+                                @if ($product->store && $product->store->alamat)
+                                <p class="ml-2 text-blue-600 dark:text-blue-400">
+                                    {{ $product->store->alamat }}
+                                </p>
+                            @endif
+                            </div>
+
+
                         </div>
                         <div class="mt-6">
                             <div class="text-3xl font-bold text-blue-600 dark:text-blue-400">
@@ -165,44 +193,52 @@
 
                             {{-- Di dalam bagian tombol wishlist --}}
                             @auth
-                                @php
-                                    $isInWishlist = auth()
-                                        ->user()
-                                        ->wishlists()
-                                        ->where('product_id', $product->id)
-                                        ->exists();
-                                @endphp
-
-                                <button
-                                    class="text-{{ $isInWishlist ? 'red-600' : 'gray-400' }} hover:text-red-500 dark:hover:text-red-400 transition-colors duration-300 relative"
-                                    onclick="event.preventDefault(); document.getElementById('wishlist-form-{{ $product->id }}').submit()"
-                                    title="{{ $isInWishlist ? 'Hapus dari Wishlist' : 'Tambahkan ke Wishlist' }}">
-                                    <i class="iconify text-2xl" data-icon="lucide:heart"></i>
-                                    @if ($isInWishlist)
-                                        <div class="absolute inset-0 flex items-center justify-center">
-                                            <i class="iconify text-2xl text-red-600 absolute animate-ping"
-                                                data-icon="lucide:heart"></i>
-                                        </div>
-                                    @endif
-                                </button>
-
-                                <form id="wishlist-form-{{ $product->id }}"
-                                    action="{{ $isInWishlist ? route('wishlist.remove', $product->id) : route('wishlist.add') }}"
-                                    method="POST" class="hidden">
-                                    @csrf
-                                    @if ($isInWishlist)
-                                        @method('DELETE')
-                                    @endif
-                                    <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                </form>
-                            @else
-                                <button
-                                    class="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors duration-300"
-                                    onclick="window.location.href='{{ route('login') }}'"
-                                    title="Login untuk menambahkan ke Wishlist">
-                                    <i class="iconify text-2xl" data-icon="lucide:heart"></i>
-                                </button>
-                            @endauth
+                            @php
+                                // Cek apakah produk ada di wishlist
+                                $isInWishlist = auth()
+                                    ->user()
+                                    ->wishlists()
+                                    ->where('product_id', $product->id)
+                                    ->exists();
+                            @endphp
+                        
+                            <!-- Tombol Wishlist -->
+                            <button
+                            class="text-{{ $isInWishlist ? 'red-600' : 'gray-400' }} hover:text-red-500 dark:hover:text-red-400 transition-colors duration-300 relative"
+                            onclick="event.preventDefault(); document.getElementById('wishlist-form-{{ $product->id }}').submit()"
+                            title="{{ $isInWishlist ? 'Hapus dari Wishlist' : 'Tambahkan ke Wishlist' }}">
+                            <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                            </svg>
+                        
+                            @if ($isInWishlist)
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <svg class="w-8 h-8 text-red-600 animate-ping" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                                    </svg>
+                                </div>
+                            @endif
+                        </button>
+                        
+                            <!-- Form untuk menambah atau menghapus dari wishlist -->
+                            <form id="wishlist-form-{{ $product->id }}"
+                                action="{{ $isInWishlist ? route('wishlist.remove', $product->id) : route('wishlist.add') }}"
+                                method="POST" class="hidden">
+                                @csrf
+                                @if ($isInWishlist)
+                                    @method('DELETE')
+                                @endif
+                                <input type="hidden" name="product_id" value="{{ $product->id }}">
+                            </form>
+                        @else
+                            <!-- Tombol untuk login jika belum login -->
+                            <button
+                                class="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors duration-300"
+                                onclick="window.location.href='{{ route('login') }}'"
+                                title="Login untuk menambahkan ke Wishlist">
+                                <i class="iconify text-2xl" data-icon="lucide:heart"></i>
+                            </button>
+                        @endauth
                         </div>
                     </div>
                 </div>
@@ -266,32 +302,52 @@
         <div class="mt-8 bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden" data-aos="fade-up"
             data-aos-delay="200">
             <div class="p-6">
-                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Reviews</h2>
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Customer Reviews</h2>
 
                 @if (isset($reviews) && $reviews->count() > 0)
-                    <ul class="space-y-4">
+                    <ul class="space-y-6">
                         @foreach ($reviews as $review)
-                            <li class="border-b border-gray-200 dark:border-gray-700 pb-4">
-                                <div class="flex items-center">
-                                    <span
-                                        class="font-semibold text-gray-900 dark:text-white">{{ $review->user->name }}</span>
-                                    <div class="flex ml-2">
-                                        @for ($i = 1; $i <= 5; $i++)
-                                            <i class="iconify text-{{ $i <= $review->star ? 'yellow' : 'gray' }}-400"
-                                                data-icon="lucide:star"></i>
-                                        @endfor
+                            <li class="border-b border-gray-200 dark:border-gray-700 pb-6">
+                                <div class="flex items-start">
+                                    <img src="{{ $review->user->image ? asset('storage/images/' . $review->user->image) : asset('images/default-user.png') }}"
+                                        alt="User" class="w-12 h-12 rounded-full mr-4">
+                                    <div class="flex-1">
+                                        <div class="flex items-center">
+                                            <span
+                                                class="font-semibold text-gray-900 dark:text-white">{{ $review->user->name }}</span>
+                                            <div class="flex ml-2">
+                                                @for ($i = 1; $i <= 5; $i++)
+                                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                                        class="w-5 h-5 {{ $i <= $review->rating ? 'text-yellow-400' : 'text-gray-400 ?>' }}"
+                                                        fill="currentColor" viewBox="0 0 24 24">
+                                                        <path
+                                                            d="M12 .587l3.668 7.571L24 9.748l-6 5.848 1.416 8.264L12 18.897l-7.416 4.963L6 15.596 0 9.748l8.332-1.59z" />
+                                                    </svg>
+                                                @endfor
+                                            </div>
+                                        </div>
+                                        <p class="mt-2 text-gray-600 dark:text-gray-300">{{ $review->comment }}</p>
+                                        @if (!empty($review->images))
+                                            <div class="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                @foreach (json_decode($review->images) as $image)
+                                                <div class="relative overflow-hidden rounded-lg shadow-md group">
+                                                    <img src="{{ asset('storage/reviews/' . $image) }}"
+                                                        alt="Review Image"
+                                                        class="w-full h-32 md:h-40 lg:h-48 object-contain" />
+                                                </div>
+                                                @endforeach
+                                            </div>
+                                        @endif
                                     </div>
                                 </div>
-                                <p class="mt-2 text-gray-600 dark:text-gray-300">{{ $review->text }}</p>
                             </li>
                         @endforeach
                     </ul>
                 @else
-                    <p class="text-gray-600 dark:text-gray-300">No reviews yet.</p>
+                    <p class="text-gray-600 dark:text-gray-300 text-center py-8">No reviews yet.</p>
                 @endif
             </div>
         </div>
-
         <!-- Related Products -->
         @if (isset($relatedProducts) && count($relatedProducts) > 0)
             <div class="mt-12" data-aos="fade-up" data-aos-delay="200">
@@ -324,12 +380,19 @@
                                     <div class="flex items-center mb-2">
                                         <div class="flex">
                                             @for ($i = 1; $i <= 5; $i++)
-                                                <i class="iconify text-{{ $i <= 4 ? 'yellow' : 'gray' }}-400"
-                                                    data-icon="lucide:star"></i>
+                                                <svg xmlns="http://www.w3.org/2000/svg"
+                                                    class="w-5 h-5 {{ $i <= $relatedProduct->averageRating ? 'text-yellow-400' : 'text-gray-400' }}"
+                                                    fill="currentColor" viewBox="0 0 24 24">
+                                                    <path
+                                                        d="M12 .587l3.668 7.571L24 9.748l-6 5.848 1.416 8.264L12 18.897l-7.416 4.963L6 15.596 0 9.748l8.332-1.59z" />
+                                                </svg>
                                             @endfor
                                         </div>
-                                        <span class="ml-2 text-gray-600 dark:text-gray-400 text-xs">(4.0)</span>
+                                        <span class="ml-2 text-gray-600 dark:text-gray-400 text-xs">
+                                            ({{ number_format($relatedProduct->averageRating, 1) }})
+                                        </span>
                                     </div>
+
                                     <p class="text-gray-600 dark:text-gray-300 mb-4 text-sm line-clamp-2 flex-grow">
                                         {{ $relatedProduct->description }}</p>
                                     <div class="flex justify-between items-center mt-auto">

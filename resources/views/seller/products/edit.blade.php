@@ -856,7 +856,7 @@
             if (!category) errors.push('Kategori produk wajib dipilih');
             if (!price || price < 1000) errors.push('Harga produk minimal Rp 1.000');
             if (!stock || stock < 0) errors.push('Stok produk tidak boleh kosong');
-            if (!weight || weight < 1) errors.push('Berat produk wajib diisi (minimal 1 gram)');
+            if (!weight || weight < 0) errors.push('Berat produk wajib diisi');
             if (!description || description.length < 20) errors.push('Deskripsi produk minimal 20 karakter');
             
             // Check if at least one image exists (either current or new)

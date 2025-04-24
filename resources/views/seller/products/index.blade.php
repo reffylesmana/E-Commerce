@@ -490,7 +490,7 @@
             <!-- Active Products Card -->
             <div class="stat-card green animate-fade-in-delay-1">
                 <div class="stat-icon green">
-                    <i class="iconify text-2xl" data-icon="tabler:check-circle"></i>
+                    <i class="iconify text-2xl" data-icon="tabler:check"></i>
                 </div>
                 <div class="stat-label">Produk Aktif</div>
                 <div class="stat-value">{{ $stats['active'] }}</div>
@@ -539,18 +539,7 @@
                         <tr>
                             <td>
                                 @if($product->photos->isNotEmpty())
-                                    @if($product->photos->count() == 1)
-                                        <img class="product-image product-image-single" src="{{ Storage::url($product->photos->first()->photo) }}" alt="{{ $product->name }}">
-                                    @else
-                                        <div class="image-tooltip">
-                                            <img class="product-image" src="{{ Storage::url($product->photos->first()->photo) }}" alt="{{ $product->name }}">
-                                            @if($product->photos->count() > 1)
-                                                <div class="tooltip-image">
-                                                    <img src="{{ Storage::url($product->photos->first()->photo) }}" alt="{{ $product->name }}">
-                                                </div>
-                                            @endif
-                                        </div>
-                                    @endif
+                                    <img class="product-image" src="{{ Storage::url($product->photos->first()->photo) }}" alt="{{ $product->name }}">
                                 @else
                                     <div class="product-placeholder">
                                         <i class="iconify text-xl" data-icon="tabler:photo"></i>

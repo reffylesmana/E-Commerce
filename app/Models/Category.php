@@ -10,10 +10,7 @@ class Category extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = [
-        'name',
-        'photo',
-    ];
+    protected $fillable = ['name', 'photo'];
 
     public function stores()
     {
@@ -24,4 +21,16 @@ class Category extends Model
     {
         return $this->hasMany(CategoryPhoto::class);
     }
+
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
+
+
+    public function discounts()
+    {
+        return $this->belongsToMany(Discount::class, 'discount_category');
+    }
+
 }

@@ -691,8 +691,8 @@
                                         Pilih Foto
                                     </button>
                                     <p class="upload-formats">Format: JPG, PNG, GIF (Maks. 5MB)</p>
-                                    <input type="file" id="productImages" name="photos[]" multiple
-                                        accept="image/*" class="hidden">
+                                    <input type="file" id="productImages" name="photos[]" multiple accept="image/*"
+                                        class="hidden">
                                 </div>
 
                                 <div id="imagePreview" class="image-preview mt-6"></div>
@@ -980,14 +980,8 @@
             // Validation Helpers
             function validateFiles(files) {
                 const maxSize = 5 * 1024 * 1024; // 5MB
-                const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
 
                 for (const file of files) {
-                    if (!validTypes.includes(file.type)) {
-                        showError('Format File Tidak Valid', 'Hanya file JPG, PNG, atau GIF yang diperbolehkan');
-                        return false;
-                    }
-
                     if (file.size > maxSize) {
                         showError('Ukuran File Terlalu Besar', 'Ukuran file tidak boleh lebih dari 5MB');
                         return false;
@@ -996,6 +990,7 @@
 
                 return true;
             }
+
 
             function handleInputValidation(e) {
                 const input = e.target;
@@ -1076,7 +1071,7 @@
                     allowOutsideClick: false,
                     didOpen: () => Swal.showLoading()
                 });
-                
+
                 this.submit();
             }
 
